@@ -1026,3 +1026,78 @@ function resetObjects({ resetHistory = true } = {}) {
 
   velocity.set(
     settings.speed * Math.cos
+  const angleRadians = THREE.MathUtils.degToRad(settings.angle);
+
+  velocity.set(
+    settings.speed * Math.cos(angleRadians),
+    settings.speed * Math.sin(angleRadians),
+    0
+  );
+
+  if (settings.mode === "freefall") {
+    ball.position.set(
+      0,
+      floorTop + ballRadius + settings.freefallHeight,
+      0
+    );
+
+    velocity.set(
+      0,
+      -Math.abs(settings.speed),
+      0
+    );
+  }
+
+  if (settings.mode === "friction") {
+    velocity.y = 0;
+  }
+
+  if (settings.mode === "collision") {
+    ball.position.set(
+      settings.collisionPosition1 ?? -20,
+      floorTop + ballRadius,
+      0
+    );
+
+    target.position.set(
+      settings.collisionPosition2 ?? 10,
+      floorTop + ballRadius,
+      0
+    );
+
+    velocity.set(
+      settings.collisionVelocity1 ?? settings.speed,
+      0,
+      0
+    );
+
+    targetVelocity.set(
+      settings.collisionVelocity2 ?? 0,
+      0,
+      0
+    );
+
+    target.visible = true;
+  }
+
+  updateEnvironment(settings);
+  updateFormula(settings);
+  fitCameraToStage();
+  clearTrail();
+
+  if (resetHistory) {
+    history = [];
+    historyIndex = 0;
+    saveState();
+  }
+
+  updateInfo(
+    settings,
+    lastForce,
+    lastAcceleration
+  );
+
+  updateTimeline();
+
+  elements.playPause.textContent = "▶ 재생";
+}
