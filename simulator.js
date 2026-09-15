@@ -1025,10 +1025,6 @@ function resetObjects({ resetHistory = true } = {}) {
   const angleRadians = THREE.MathUtils.degToRad(settings.angle);
 
   velocity.set(
-    settings.speed * Math.cos
-  const angleRadians = THREE.MathUtils.degToRad(settings.angle);
-
-  velocity.set(
     settings.speed * Math.cos(angleRadians),
     settings.speed * Math.sin(angleRadians),
     0
