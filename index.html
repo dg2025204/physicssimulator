@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Physics & Space Simulator</title>
+  <meta
+    name="description"
+    content="중력, 마찰, 충돌, 공기저항을 체험하는 3D 물리 시뮬레이터"
+  >
+
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <div>
+      <h1>Physics & Space Simulator</h1>
+      <p>당곡고 물리 시뮬레이터</p>
+    </div>
+  </header>
+
+  <main class="app">
+    <aside class="control-panel">
+      <section class="control-section">
+        <h2>1. 모드</h2>
+        <select id="mode">
+          <option value="gravity">포물선/중력</option>
+          <option value="friction">마찰</option>
+          <option value="drag">공기저항+바람</option>
+          <option value="collision">탄성 충돌</option>
+        </select>
+      </section>
+
+      <section class="control-section">
+        <h2>2. 환경</h2>
+        <select id="environment">
+          <option value="earth">Earth 지구</option>
+          <option value="moon">Moon 달</option>
+          <option value="mars">Mars 화성</option>
+          <option value="space">Space 우주</option>
+          <option value="vacuum">Vacuum 진공</option>
+        </select>
+      </section>
+
+      <section class="control-section">
+        <h2>3. 공통 설정</h2>
+
+        <label>
+          초기 속도 v₀ [m/s]
+          <input id="speed" type="number" value="15" step="0.1">
+        </label>
+
+        <label>
+          질량 m [kg]
+          <input id="mass" type="number" value="1" min="0.01" step="0.1">
+        </label>
+
+        <label>
+          각도 θ [도]
+          <input id="angle" type="number" value="60" step="1">
+        </label>
+
+        <div class="direction-buttons">
+          <button type="button" data-angle="90">↑</button>
+          <button type="button" data-angle="270">↓</button>
+          <button type="button" data-angle="180">←</button>
+          <button type="button" data-angle="0">→</button>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <h2>4. 사용자 물리값</h2>
+        <p class="help">
+          체크한 항목만 사용자 값이 적용됩니다.
+        </p>
+
+        <label class="custom-row">
+          <input id="useCustomG" type="checkbox">
+          <span>중력 g</span>
+          <input id="customG" type="number" value="9.8" step="0.01">
+        </label>
+
+        <label class="custom-row">
+          <input id="useCustomMu" type="checkbox">
+          <span>마찰계수 μ</span>
+          <input id="customMu" type="number" value="0.3" step="0.01">
+        </label>
+
+        <label class="custom-row">
+          <input id="useCustomCd" type="checkbox">
+          <span>항력계수 Cd</span>
+          <input id="customCd" type="number" value="0.47" step="0.01">
+        </label>
+
+        <label class="custom-row">
+          <input id="useCustomWind" type="checkbox">
+          <span>바람 [m/s]</span>
+          <input id="customWind" type="number" value="0" step="0.1">
+        </label>
+      </section>
+
+      <section class="control-section">
+        <h2>5. 시뮬레이션 설정</h2>
+
+        <label>
+          무대 너비 [m]
+          <input id="stageWidth" type="number" value="80" min="10" step="1">
+        </label>
+
+        <label>
+          시간 배율
+          <select id="timeScale">
+            <option value="0.25">0.25×</option>
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+          </select>
+        </label>
+      </section>
+
+      <div class="action-buttons">
+        <button id="startButton" type="button">실행</button>
+        <button id="stopButton" type="button">중지</button>
+        <button id="resetButton" type="button">초기화</button>
+      </div>
+
+      <p id="message" class="message" aria-live="polite">
+        설정 후 실행 버튼을 누르세요.
+      </p>
+    </aside>
+
+    <section class="simulation-area">
+      <div id="canvasContainer"></div>
+
+      <div class="overlay formula-card">
+        <h2>적용 공식</h2>
+        <pre id="formula"></pre>
+      </div>
+
+      <div class="overlay info-card">
+        <h2>실시간 물리량</h2>
+        <pre id="physicsInfo"></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Physics & Space Simulator · 당곡고 물리</p>
+  </footer>
+
+  <script
+    async
+    src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js">
+  </script>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.180.0/build/three.module.js"
+      }
+    }
+  </script>
+
+  <script type="module" src="./simulator.js"></script>
+</body>
+</html>
