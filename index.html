@@ -2,164 +2,614 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Physics & Space Simulator</title>
+
   <meta
     name="description"
-    content="중력, 마찰, 충돌, 공기저항을 체험하는 3D 물리 시뮬레이터"
+    content="다양한 물리 운동을 체험하는 3D 물리 시뮬레이터"
   >
 
   <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
+  <!-- 최초 모드 선택 -->
+  <div
+    id="modeModal"
+    class="modal-backdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modeModalTitle"
+  >
+    <section class="mode-modal">
+      <div class="modal-heading">
+        <span class="eyebrow">PHYSICS LAB</span>
+        <h1 id="modeModalTitle">어떤 운동을 시뮬레이션할까요?</h1>
+        <p>운동 카드를 선택하면 해당 모드의 초기값이 적용됩니다.</p>
+      </div>
+
+      <div class="mode-card-grid">
+        <button class="mode-card" type="button" data-select-mode="gravity">
+          <span class="mode-icon">↗</span>
+          <strong>포물선 운동</strong>
+          <small>발사 각도와 중력에 따른 운동</small>
+        </button>
+
+        <button class="mode-card" type="button" data-select-mode="freefall">
+          <span class="mode-icon">↓</span>
+          <strong>자유 낙하</strong>
+          <small>중력만 받으며 낙하하는 운동</small>
+        </button>
+
+        <button class="mode-card" type="button" data-select-mode="friction">
+          <span class="mode-icon">▣</span>
+          <strong>마찰 운동</strong>
+          <small>수평면에서 마찰로 감속하는 운동</small>
+        </button>
+
+        <button class="mode-card" type="button" data-select-mode="drag">
+          <span class="mode-icon">≋</span>
+          <strong>공기저항과 바람</strong>
+          <small>항력과 바람을 고려한 운동</small>
+        </button>
+
+        <button class="mode-card" type="button" data-select-mode="collision">
+          <span class="mode-icon">● ●</span>
+          <strong>탄성 충돌</strong>
+          <small>두 물체의 1차원 완전 탄성 충돌</small>
+        </button>
+
+        <button class="mode-card" type="button" data-select-mode="incline">
+          <span class="mode-icon">◢</span>
+          <strong>빗면 운동</strong>
+          <small>경사면의 중력 성분과 마찰</small>
+        </button>
+
+        <button class="mode-card" type="button" data-select-mode="circular">
+          <span class="mode-icon">↻</span>
+          <strong>원운동</strong>
+          <small>각속도와 구심가속도 관찰</small>
+        </button>
+
+        <button class="mode-card" type="button" data-select-mode="torque">
+          <span class="mode-icon">⟲</span>
+          <strong>돌림힘</strong>
+          <small>τ = Iα에 따른 회전 운동</small>
+        </button>
+
+        <button class="mode-card" type="button" data-select-mode="escape">
+          <span class="mode-icon">🚀</span>
+          <strong>탈출 속도</strong>
+          <small>중심천체의 역제곱 중력장</small>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- 공식 설명 -->
+  <div
+    id="formulaHelpModal"
+    class="modal-backdrop hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="formulaHelpTitle"
+  >
+    <section class="popup-modal">
+      <div class="popup-header">
+        <div>
+          <span class="eyebrow">PHYSICS THEORY</span>
+          <h2 id="formulaHelpTitle">공식 설명</h2>
+        </div>
+
+        <button
+          id="closeFormulaHelpButton"
+          class="close-button"
+          type="button"
+          aria-label="닫기"
+        >
+          ×
+        </button>
+      </div>
+
+      <div id="formulaHelpContent" class="formula-help-content"></div>
+    </section>
+  </div>
+
+  <!-- 표시 물리량 설정 -->
+  <div
+    id="quantityModal"
+    class="modal-backdrop hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="quantityModalTitle"
+  >
+    <section class="popup-modal quantity-modal">
+      <div class="popup-header">
+        <div>
+          <span class="eyebrow">DISPLAY</span>
+          <h2 id="quantityModalTitle">표시할 물리량</h2>
+        </div>
+
+        <button
+          id="closeQuantityButton"
+          class="close-button"
+          type="button"
+          aria-label="닫기"
+        >
+          ×
+        </button>
+      </div>
+
+      <p class="popup-description">
+        실시간 정보 카드에 표시할 항목만 선택하세요.
+      </p>
+
+      <div class="quantity-grid">
+        <label>
+          <input type="checkbox" data-quantity="time" checked>
+          시간 <i>t</i>
+        </label>
+
+        <label>
+          <input type="checkbox" data-quantity="position" checked>
+          위치 <b>r⃗</b>
+        </label>
+
+        <label>
+          <input type="checkbox" data-quantity="velocity" checked>
+          속도 <b>v⃗</b>
+        </label>
+
+        <label>
+          <input type="checkbox" data-quantity="speed" checked>
+          속력 |<b>v⃗</b>|
+        </label>
+
+        <label>
+          <input type="checkbox" data-quantity="acceleration">
+          가속도 <b>a⃗</b>
+        </label>
+
+        <label>
+          <input type="checkbox" data-quantity="force">
+          알짜힘 <b>F⃗</b><sub>net</sub>
+        </label>
+
+        <label>
+          <input type="checkbox" data-quantity="momentum">
+          운동량 <b>p⃗</b>
+        </label>
+
+        <label>
+          <input type="checkbox" data-quantity="energy" checked>
+          에너지
+        </label>
+
+        <label>
+          <input type="checkbox" data-quantity="angular">
+          각운동 물리량
+        </label>
+      </div>
+
+      <button id="saveQuantityButton" class="modal-save-button" type="button">
+        적용
+      </button>
+    </section>
+  </div>
+
   <header class="site-header">
-    <div>
-      <h1>Physics & Space Simulator</h1>
-      <p>당곡고 물리 시뮬레이터</p>
+    <div class="brand">
+      <div class="brand-mark">P</div>
+
+      <div>
+        <h1>Physics Simulator</h1>
+        <p>당곡고 인터랙티브 물리 실험실</p>
+      </div>
     </div>
+
+    <button id="openModeModalButton" class="header-button" type="button">
+      운동 다시 선택
+    </button>
   </header>
 
   <main class="app">
     <aside class="control-panel">
-      <section class="control-section">
-        <h2>1. 모드</h2>
-        <select id="mode">
-          <option value="gravity">포물선/중력</option>
-          <option value="friction">마찰</option>
-          <option value="drag">공기저항+바람</option>
-          <option value="collision">탄성 충돌</option>
-        </select>
-      </section>
-
-      <section class="control-section">
-        <h2>2. 환경</h2>
-        <select id="environment">
-          <option value="earth">Earth 지구</option>
-          <option value="moon">Moon 달</option>
-          <option value="mars">Mars 화성</option>
-          <option value="space">Space 우주</option>
-          <option value="vacuum">Vacuum 진공</option>
-        </select>
-      </section>
-
-      <section class="control-section">
-        <h2>3. 공통 설정</h2>
-
-        <label>
-          초기 속도 v₀ [m/s]
-          <input id="speed" type="number" value="15" step="0.1">
-        </label>
-
-        <label>
-          질량 m [kg]
-          <input id="mass" type="number" value="1" min="0.01" step="0.1">
-        </label>
-
-        <label>
-          각도 θ [도]
-          <input id="angle" type="number" value="60" step="1">
-        </label>
-
-        <div class="direction-buttons">
-          <button type="button" data-angle="90">↑</button>
-          <button type="button" data-angle="270">↓</button>
-          <button type="button" data-angle="180">←</button>
-          <button type="button" data-angle="0">→</button>
+      <div class="panel-title">
+        <div>
+          <span class="eyebrow">CONTROL</span>
+          <h2>실험 설정</h2>
         </div>
-      </section>
 
-      <section class="control-section">
-        <h2>4. 사용자 물리값</h2>
-        <p class="help">
-          체크한 항목만 사용자 값이 적용됩니다.
-        </p>
+        <span id="currentModeBadge" class="mode-badge">
+          포물선 운동
+        </span>
+      </div>
 
-        <label class="custom-row">
-          <input id="useCustomG" type="checkbox">
-          <span>중력 g</span>
-          <input id="customG" type="number" value="9.8" step="0.01">
-        </label>
+      <details class="setting-group" open>
+        <summary>
+          <span>운동 및 환경</span>
+          <span class="summary-icon">＋</span>
+        </summary>
 
-        <label class="custom-row">
-          <input id="useCustomMu" type="checkbox">
-          <span>마찰계수 μ</span>
-          <input id="customMu" type="number" value="0.3" step="0.01">
-        </label>
+        <div class="setting-content">
+          <label>
+            운동 종류
+            <select id="mode">
+              <option value="gravity">포물선 운동</option>
+              <option value="freefall">자유 낙하 운동</option>
+              <option value="friction">수평면 마찰 운동</option>
+              <option value="drag">공기저항과 바람</option>
+              <option value="collision">탄성 충돌</option>
+              <option value="incline">빗면 운동</option>
+              <option value="circular">원운동</option>
+              <option value="torque">돌림힘</option>
+              <option value="escape">탈출 속도</option>
+            </select>
+          </label>
 
-        <label class="custom-row">
-          <input id="useCustomCd" type="checkbox">
-          <span>항력계수 Cd</span>
-          <input id="customCd" type="number" value="0.47" step="0.01">
-        </label>
+          <label>
+            실험 환경
+            <select id="environment">
+              <option value="earth">Earth · 지구</option>
+              <option value="moon">Moon · 달</option>
+              <option value="mars">Mars · 화성</option>
+              <option value="space">Space · 우주</option>
+              <option value="vacuum">Vacuum · 지구 중력 진공</option>
+            </select>
+          </label>
+        </div>
+      </details>
 
-        <label class="custom-row">
-          <input id="useCustomWind" type="checkbox">
-          <span>바람 [m/s]</span>
-          <input id="customWind" type="number" value="0" step="0.1">
-        </label>
-      </section>
+      <details class="setting-group" open>
+        <summary>
+          <span>초기 조건</span>
+          <span class="summary-icon">＋</span>
+        </summary>
 
-      <section class="control-section">
-        <h2>5. 시뮬레이션 설정</h2>
+        <div class="setting-content">
+          <div class="input-grid">
+            <label>
+              초기 속력
+              <div class="input-unit">
+                <input id="speed" type="number" value="15" step="0.1">
+                <span>m·s⁻¹</span>
+              </div>
+            </label>
 
-        <label>
-          무대 너비 [m]
-          <input id="stageWidth" type="number" value="80" min="10" step="1">
-        </label>
+            <label>
+              질량
+              <div class="input-unit">
+                <input
+                  id="mass"
+                  type="number"
+                  value="1"
+                  min="0.01"
+                  step="0.1"
+                >
+                <span>kg</span>
+              </div>
+            </label>
+          </div>
 
-        <label>
-          시간 배율
-          <select id="timeScale">
-            <option value="0.25">0.25×</option>
-            <option value="0.5">0.5×</option>
-            <option value="1" selected>1×</option>
-            <option value="2">2×</option>
-            <option value="4">4×</option>
-          </select>
-        </label>
-      </section>
+          <label>
+            발사 각도 θ
+            <div class="input-unit">
+              <input id="angle" type="number" value="60" step="1">
+              <span>°</span>
+            </div>
+          </label>
+
+          <div class="direction-buttons">
+            <button type="button" data-angle="90">↑ 위</button>
+            <button type="button" data-angle="270">↓ 아래</button>
+            <button type="button" data-angle="180">← 왼쪽</button>
+            <button type="button" data-angle="0">→ 오른쪽</button>
+          </div>
+
+          <p class="section-note">
+            아래 값은 다른 힘으로 계산된 가속도에 계속 더해지는 사용자 추가
+            가속도입니다.
+          </p>
+
+          <div class="input-grid">
+            <label>
+              추가 가속도 aₓ
+              <div class="input-unit">
+                <input id="accelerationX" type="number" value="0" step="0.1">
+                <span>m·s⁻²</span>
+              </div>
+            </label>
+
+            <label>
+              추가 가속도 aᵧ
+              <div class="input-unit">
+                <input id="accelerationY" type="number" value="0" step="0.1">
+                <span>m·s⁻²</span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </details>
+
+      <details class="setting-group">
+        <summary>
+          <span>사용자 물리값</span>
+          <span class="summary-icon">＋</span>
+        </summary>
+
+        <div class="setting-content">
+          <p class="section-note">
+            스위치를 켠 항목만 환경 프리셋 대신 적용됩니다.
+          </p>
+
+          <div class="custom-setting">
+            <label class="switch-label">
+              <input id="useCustomG" type="checkbox">
+              <span class="switch"></span>
+              <span>중력가속도 g</span>
+            </label>
+
+            <div class="input-unit compact">
+              <input id="customG" type="number" value="9.8" step="0.01">
+              <span>m·s⁻²</span>
+            </div>
+          </div>
+
+          <div class="custom-setting">
+            <label class="switch-label">
+              <input id="useCustomMu" type="checkbox">
+              <span class="switch"></span>
+              <span>마찰계수 μ</span>
+            </label>
+
+            <div class="input-unit compact">
+              <input id="customMu" type="number" value="0.3" step="0.01">
+              <span>−</span>
+            </div>
+          </div>
+
+          <div class="custom-setting">
+            <label class="switch-label">
+              <input id="useCustomCd" type="checkbox">
+              <span class="switch"></span>
+              <span>항력계수 Cᴅ</span>
+            </label>
+
+            <div class="input-unit compact">
+              <input id="customCd" type="number" value="0.47" step="0.01">
+              <span>−</span>
+            </div>
+          </div>
+
+          <div class="custom-setting">
+            <label class="switch-label">
+              <input id="useCustomWind" type="checkbox">
+              <span class="switch"></span>
+              <span>바람 vwind</span>
+            </label>
+
+            <div class="input-unit compact">
+              <input id="customWind" type="number" value="0" step="0.1">
+              <span>m·s⁻¹</span>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="setting-group">
+        <summary>
+          <span>모드별 세부 설정</span>
+          <span class="summary-icon">＋</span>
+        </summary>
+
+        <div class="setting-content">
+          <label>
+            자유 낙하 시작 높이 h₀
+            <div class="input-unit">
+              <input id="freefallHeight" type="number" value="25" min="1" step="1">
+              <span>m</span>
+            </div>
+          </label>
+
+          <label>
+            빗면 각도 β
+            <div class="input-unit">
+              <input id="inclineAngle" type="number" value="30" step="1">
+              <span>°</span>
+            </div>
+          </label>
+
+          <label>
+            원운동 반지름 r
+            <div class="input-unit">
+              <input
+                id="circularRadius"
+                type="number"
+                value="10"
+                min="0.1"
+                step="0.1"
+              >
+              <span>m</span>
+            </div>
+          </label>
+
+          <label>
+            각속도 ω
+            <div class="input-unit">
+              <input id="angularVelocity" type="number" value="1" step="0.1">
+              <span>rad·s⁻¹</span>
+            </div>
+          </label>
+
+          <label>
+            돌림힘 τ
+            <div class="input-unit">
+              <input id="torque" type="number" value="10" step="0.1">
+              <span>N·m</span>
+            </div>
+          </label>
+
+          <label>
+            관성 모멘트 I
+            <div class="input-unit">
+              <input
+                id="momentOfInertia"
+                type="number"
+                value="5"
+                min="0.01"
+                step="0.1"
+              >
+              <span>kg·m²</span>
+            </div>
+          </label>
+
+          <label>
+            중심천체 질량 M
+            <div class="input-unit">
+              <input id="planetMass" type="number" value="5.972e24">
+              <span>kg</span>
+            </div>
+          </label>
+
+          <label>
+            중심천체 반지름 R
+            <div class="input-unit">
+              <input id="planetRadius" type="number" value="6.371e6">
+              <span>m</span>
+            </div>
+          </label>
+        </div>
+      </details>
+
+      <details class="setting-group">
+        <summary>
+          <span>무대 및 시간</span>
+          <span class="summary-icon">＋</span>
+        </summary>
+
+        <div class="setting-content">
+          <label>
+            무대 너비
+            <div class="input-unit">
+              <input
+                id="stageWidth"
+                type="number"
+                value="80"
+                min="10"
+                step="1"
+              >
+              <span>m</span>
+            </div>
+          </label>
+
+          <label>
+            시간 배율
+            <select id="timeScale">
+              <option value="0.25">0.25×</option>
+              <option value="0.5">0.5×</option>
+              <option value="1" selected>1×</option>
+              <option value="2">2×</option>
+              <option value="4">4×</option>
+            </select>
+          </label>
+        </div>
+      </details>
 
       <div class="action-buttons">
-        <button id="startButton" type="button">실행</button>
-        <button id="stopButton" type="button">중지</button>
-        <button id="resetButton" type="button">초기화</button>
+        <button id="startButton" class="primary-button" type="button">
+          ▶ 처음부터
+        </button>
+
+        <button id="playPauseButton" type="button">
+          ▶ 재생
+        </button>
+
+        <button id="stopButton" type="button">
+          Ⅱ 정지
+        </button>
+
+        <button id="resetButton" type="button">
+          ↻ 초기화
+        </button>
+      </div>
+
+      <div class="timeline-panel">
+        <div class="timeline-header">
+          <span>시간 탐색</span>
+          <output id="timelineValue">0.00 s</output>
+        </div>
+
+        <input
+          id="timeline"
+          type="range"
+          min="0"
+          max="0"
+          value="0"
+          step="1"
+          aria-label="시뮬레이션 시간 탐색"
+        >
+
+        <p>저장된 과거 시점으로 이동한 뒤 다시 재생할 수 있습니다.</p>
       </div>
 
       <p id="message" class="message" aria-live="polite">
-        설정 후 실행 버튼을 누르세요.
+        운동을 선택하고 실행해 주세요.
       </p>
     </aside>
 
     <section class="simulation-area">
       <div id="canvasContainer"></div>
 
+      <div class="simulation-toolbar">
+        <button id="zoomInButton" type="button" title="확대">＋</button>
+        <button id="zoomOutButton" type="button" title="축소">−</button>
+
+        <button
+          id="resetCameraButton"
+          class="wide-tool-button"
+          type="button"
+        >
+          화면 맞춤
+        </button>
+      </div>
+
+      <div class="zoom-guide">
+        휠: 확대·축소 · 왼쪽 드래그: 회전 · 오른쪽 드래그: 이동
+      </div>
+
       <div class="overlay formula-card">
-        <h2>적용 공식</h2>
+        <div class="overlay-title-row">
+          <div class="overlay-heading">적용 공식</div>
+
+          <button id="formulaHelpButton" class="mini-button" type="button">
+            공식 설명
+          </button>
+        </div>
+
         <pre id="formula"></pre>
       </div>
 
       <div class="overlay info-card">
-        <h2>실시간 물리량</h2>
-        <pre id="physicsInfo"></pre>
+        <div class="overlay-title-row">
+          <div class="overlay-heading">실시간 물리량</div>
+
+          <button id="quantitySettingsButton" class="mini-button" type="button">
+            표시 설정
+          </button>
+        </div>
+
+        <div id="physicsInfo"></div>
       </div>
     </section>
   </main>
 
-  <footer>
-    <p>Physics & Space Simulator · 당곡고 물리</p>
-  </footer>
-
-  <script
-    async
-    src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js">
-  </script>
-
   <script type="importmap">
     {
       "imports": {
-        "three": "https://unpkg.com/three@0.180.0/build/three.module.js"
+        "three": "https://unpkg.com/three@0.180.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.180.0/examples/jsm/"
       }
     }
   </script>
