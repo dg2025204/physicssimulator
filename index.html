@@ -573,6 +573,10 @@
     }
   </script>
 
-  <script type="module" src="./simulator.js?v=20"></script>
+ <!-- 모드 선택은 시뮬레이터보다 먼저, 독립적으로 실행 -->
+<script src="./mode-selector.js?v=30"></script>
+
+<!-- 3D 시뮬레이터 -->
+<script type="module" src="./simulator.js?v=30"></script>
 </body>
 </html>
