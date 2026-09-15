@@ -5,80 +5,941 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <title>Physics Simulator</title>
-  <meta name="description" content="인터랙티브 3D 물리 시뮬레이터">
 
-  <link rel="stylesheet" href="./style.css?v=20">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #06101d;
+      --panel: #0d1929;
+      --panel2: #14253b;
+      --panel3: #1b304b;
+      --border: #2b415f;
+      --primary: #39c7ff;
+      --primary-dark: #087fbf;
+      --text: #f7fbff;
+      --muted: #9caec3;
+      --yellow: #ffda3d;
+      --green: #43df8b;
+      --danger: #ff6678;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-width: 320px;
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 75% 0%, #123751 0%, transparent 35%),
+        var(--bg);
+      color: var(--text);
+      font-family:
+        Pretendard,
+        "Noto Sans KR",
+        Arial,
+        sans-serif;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+      cursor: pointer;
+    }
+
+    header {
+      min-height: 72px;
+      padding: 12px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      border-bottom: 1px solid var(--border);
+      background: rgb(6 16 29 / 94%);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .logo {
+      width: 43px;
+      height: 43px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      background: linear-gradient(140deg, var(--primary), #5465ff);
+      font-size: 1.3rem;
+      font-weight: 900;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 0.74rem;
+    }
+
+    .outline-button,
+    .secondary-button,
+    .small-button {
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--panel2);
+    }
+
+    .outline-button {
+      min-height: 39px;
+      padding: 0 14px;
+    }
+
+    button:hover {
+      border-color: var(--primary);
+      background: var(--panel3);
+    }
+
+    .app {
+      height: calc(100vh - 72px);
+      min-height: 720px;
+      display: grid;
+      grid-template-columns: 375px minmax(0, 1fr);
+    }
+
+    .control-panel {
+      padding: 18px;
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      background: rgb(9 21 37 / 98%);
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .panel-heading {
+      margin-bottom: 14px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--primary);
+      font-size: 0.67rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+    }
+
+    .panel-heading h2 {
+      margin: 4px 0 0;
+      font-size: 1.3rem;
+    }
+
+    #modeBadge {
+      max-width: 140px;
+      padding: 6px 9px;
+      overflow: hidden;
+      border: 1px solid rgb(57 199 255 / 30%);
+      border-radius: 999px;
+      background: rgb(57 199 255 / 12%);
+      color: #80deff;
+      font-size: 0.69rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    details {
+      margin-bottom: 9px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: var(--panel);
+    }
+
+    summary {
+      min-height: 48px;
+      padding: 0 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      list-style: none;
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    summary::after {
+      content: "＋";
+      color: var(--primary);
+      font-size: 1.1rem;
+      transition: transform 150ms ease;
+    }
+
+    details[open] summary::after {
+      transform: rotate(45deg);
+    }
+
+    .details-content {
+      padding: 2px 13px 13px;
+      border-top: 1px solid var(--border);
+    }
+
+    label {
+      margin-top: 10px;
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    input,
+    select {
+      width: 100%;
+      height: 38px;
+      padding: 0 9px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: 0;
+      background: #071321;
+      color: var(--text);
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgb(57 199 255 / 10%);
+    }
+
+    .input-unit {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #071321;
+    }
+
+    .input-unit:focus-within {
+      border-color: var(--primary);
+    }
+
+    .input-unit input {
+      min-width: 0;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .input-unit span {
+      padding-right: 8px;
+      color: #74889e;
+      font-size: 0.63rem;
+      white-space: nowrap;
+    }
+
+    .two-columns,
+    .three-columns {
+      display: grid;
+      gap: 7px;
+    }
+
+    .two-columns {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .three-columns {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .direction-buttons {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+    }
+
+    .direction-buttons button,
+    .action-grid button {
+      min-height: 36px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel2);
+      font-size: 0.68rem;
+    }
+
+    .help {
+      margin: 9px 0 2px;
+      color: var(--muted);
+      font-size: 0.66rem;
+      line-height: 1.55;
+    }
+
+    .custom-row {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: 1fr 135px;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .check-label {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .check-label input,
+    .quantity-grid input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
+    }
+
+    .object-card {
+      margin-top: 9px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .object-card strong {
+      font-size: 0.72rem;
+    }
+
+    .object-one {
+      border-left: 3px solid var(--yellow);
+    }
+
+    .object-two {
+      border-left: 3px solid var(--green);
+    }
+
+    .mode-specific {
+      display: none;
+    }
+
+    .mode-specific.active {
+      display: block;
+    }
+
+    .toggle-row {
+      margin-top: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .small-button {
+      min-height: 31px;
+      padding: 0 9px;
+      font-size: 0.66rem;
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    .action-grid button {
+      min-height: 41px;
+      font-weight: 700;
+    }
+
+    .action-grid .primary,
+    .popup-primary {
+      border-color: var(--primary-dark);
+      background: linear-gradient(135deg, var(--primary-dark), #1571d1);
+    }
+
+    .timeline-box {
+      margin-top: 9px;
+      padding: 11px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--panel);
+    }
+
+    .timeline-heading {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.71rem;
+    }
+
+    #timeline {
+      height: 28px;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      accent-color: var(--primary);
+    }
+
+    .timeline-box small {
+      color: var(--muted);
+      font-size: 0.62rem;
+    }
+
+    .message {
+      min-height: 38px;
+      margin: 9px 0 0;
+      padding: 9px;
+      border-radius: 8px;
+      background: rgb(255 255 255 / 4%);
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.68rem;
+      line-height: 1.45;
+    }
+
+    .simulation-panel {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      background: #020811;
+    }
+
+    #simulationCanvas {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      cursor: grab;
+    }
+
+    #simulationCanvas:active {
+      cursor: grabbing;
+    }
+
+    .camera-tools {
+      position: absolute;
+      z-index: 5;
+      top: 16px;
+      left: 50%;
+      padding: 5px;
+      display: flex;
+      gap: 5px;
+      transform: translateX(-50%);
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 11px;
+      background: rgb(7 19 34 / 84%);
+      backdrop-filter: blur(10px);
+    }
+
+    .camera-tools button {
+      min-width: 37px;
+      height: 35px;
+      padding: 0 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel2);
+    }
+
+    .overlay-card {
+      position: absolute;
+      z-index: 4;
+      top: 16px;
+      width: 280px;
+      max-height: calc(100% - 85px);
+      padding: 12px;
+      overflow-y: auto;
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 12px;
+      background: rgb(5 14 27 / 79%);
+      backdrop-filter: blur(10px);
+    }
+
+    .formula-card {
+      left: 16px;
+      color: #ffe36c;
+    }
+
+    .info-card {
+      right: 16px;
+    }
+
+    .card-heading {
+      margin-bottom: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: white;
+      font-size: 0.72rem;
+    }
+
+    .card-heading button {
+      min-height: 27px;
+      padding: 3px 7px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--panel2);
+      font-size: 0.62rem;
+    }
+
+    #formulaText {
+      margin: 0;
+      white-space: pre-wrap;
+      font: 0.67rem/1.65 Consolas, monospace;
+    }
+
+    .physics-row {
+      padding: 4px 0;
+      display: grid;
+      grid-template-columns: minmax(75px, 1fr) auto;
+      gap: 8px;
+      border-bottom: 1px solid rgb(255 255 255 / 6%);
+      font-size: 0.66rem;
+    }
+
+    .physics-symbol {
+      color: #a9bacd;
+    }
+
+    .physics-value {
+      color: #72dcff;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .info-group {
+      margin-top: 7px;
+      padding-top: 7px;
+      border-top: 1px solid var(--border);
+    }
+
+    .info-group strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 0.68rem;
+    }
+
+    .body-one-title {
+      color: var(--yellow);
+    }
+
+    .body-two-title {
+      color: var(--green);
+    }
+
+    .camera-guide {
+      position: absolute;
+      z-index: 4;
+      bottom: 12px;
+      left: 50%;
+      margin: 0;
+      padding: 6px 10px;
+      transform: translateX(-50%);
+      border: 1px solid rgb(255 255 255 / 10%);
+      border-radius: 999px;
+      background: rgb(3 12 22 / 72%);
+      color: #8293a8;
+      font-size: 0.63rem;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* 모달 */
+    .modal-backdrop {
+      position: fixed;
+      z-index: 99999;
+      inset: 0;
+      padding: 20px;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 12%, rgb(29 111 168 / 40%), transparent 45%),
+        rgb(2 8 18 / 96%);
+      backdrop-filter: blur(14px);
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .modal-backdrop.hidden {
+      display: none;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .mode-dialog {
+      width: min(1000px, 96vw);
+      max-height: 92vh;
+      padding: clamp(24px, 4vw, 42px);
+      overflow-y: auto;
+      border: 1px solid rgb(255 255 255 / 15%);
+      border-radius: 24px;
+      background: linear-gradient(145deg, #172f4b, #091a2e 60%, #06111f);
+      box-shadow: 0 40px 120px rgb(0 0 0 / 65%);
+    }
+
+    .mode-dialog h1 {
+      margin: 8px 0 9px;
+      text-align: center;
+      font-size: clamp(1.65rem, 4vw, 2.65rem);
+    }
+
+    .mode-dialog > .eyebrow,
+    .modal-description {
+      text-align: center;
+    }
+
+    .modal-description {
+      margin: 0 0 28px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 13px;
+    }
+
+    .mode-card {
+      min-width: 0;
+      min-height: 170px;
+      padding: 22px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 10px;
+      border: 1px solid #354e6f;
+      border-radius: 18px;
+      background: linear-gradient(145deg, #102944, #081a2e);
+      color: var(--text);
+      text-align: left;
+      touch-action: manipulation;
+      transition:
+        transform 150ms ease,
+        border-color 150ms ease,
+        background 150ms ease;
+    }
+
+    .mode-card:hover,
+    .mode-card:focus-visible {
+      transform: translateY(-6px);
+      border-color: var(--primary);
+      outline: none;
+      background: linear-gradient(145deg, #17476d, #0c2946);
+    }
+
+    .mode-card:active {
+      transform: scale(0.98);
+    }
+
+    .mode-icon {
+      min-width: 55px;
+      height: 55px;
+      padding: 0 9px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      background: rgb(57 199 255 / 13%);
+      color: var(--primary);
+      font-size: 1.5rem;
+      font-weight: 900;
+      pointer-events: none;
+    }
+
+    .mode-card strong,
+    .mode-card small {
+      pointer-events: none;
+    }
+
+    .mode-card strong {
+      font-size: 1rem;
+    }
+
+    .mode-card small {
+      color: var(--muted);
+      font-size: 0.74rem;
+    }
+
+    .popup-dialog {
+      width: min(680px, 96vw);
+      max-height: 90vh;
+      padding: 22px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #0b192b;
+      box-shadow: 0 30px 80px rgb(0 0 0 / 55%);
+    }
+
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .popup-header h2 {
+      margin: 5px 0 0;
+    }
+
+    .close-button {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--panel2);
+      font-size: 1.2rem;
+    }
+
+    .formula-description {
+      margin-top: 16px;
+      color: #d7e3f1;
+      line-height: 1.7;
+    }
+
+    .formula-description h3 {
+      color: var(--primary);
+    }
+
+    .formula-description pre {
+      padding: 12px;
+      overflow-x: auto;
+      border-radius: 9px;
+      background: #061321;
+      color: #ffe36c;
+      white-space: pre-wrap;
+      line-height: 1.65;
+    }
+
+    .quantity-grid {
+      margin-top: 17px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .quantity-grid label {
+      margin: 0;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #071321;
+    }
+
+    .popup-primary {
+      width: 100%;
+      min-height: 40px;
+      margin-top: 15px;
+      border: 1px solid var(--primary-dark);
+      border-radius: 8px;
+    }
+
+    @media (max-width: 1000px) {
+      .app {
+        grid-template-columns: 320px minmax(0, 1fr);
+      }
+
+      .overlay-card {
+        width: 225px;
+      }
+
+      .three-columns {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        height: auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .simulation-panel {
+        order: 1;
+        height: 65vh;
+        min-height: 530px;
+      }
+
+      .control-panel {
+        order: 2;
+        overflow: visible;
+        border-top: 1px solid var(--border);
+        border-right: 0;
+      }
+
+      .overlay-card {
+        top: auto;
+        bottom: 45px;
+        width: calc(50% - 11px);
+        max-height: 185px;
+        padding: 8px;
+      }
+
+      .formula-card {
+        left: 6px;
+      }
+
+      .info-card {
+        right: 6px;
+      }
+
+      .physics-row,
+      #formulaText {
+        font-size: 0.56rem;
+      }
+
+      .camera-guide {
+        display: none;
+      }
+
+      .mode-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .mode-card {
+        min-height: 135px;
+        padding: 15px 12px;
+      }
+    }
+
+    @media (max-width: 460px) {
+      header {
+        padding: 10px 12px;
+      }
+
+      .brand p {
+        display: none;
+      }
+
+      .outline-button {
+        padding: 0 9px;
+        font-size: 0.67rem;
+      }
+
+      .modal-backdrop {
+        padding: 8px;
+      }
+
+      .mode-dialog,
+      .popup-dialog {
+        padding: 19px 12px;
+        border-radius: 17px;
+      }
+
+      .mode-card {
+        min-height: 120px;
+      }
+
+      .mode-card small {
+        display: none;
+      }
+
+      .two-columns,
+      .quantity-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 
 <body>
-  <!-- 최초 운동 선택 창 -->
+  <!-- 운동 선택 모달 -->
   <div id="modeModal" class="modal-backdrop">
     <section class="mode-dialog">
       <p class="eyebrow">INTERACTIVE PHYSICS LAB</p>
       <h1>어떤 운동을 시뮬레이션할까요?</h1>
       <p class="modal-description">
-        운동을 선택하면 실험실과 초기값이 자동으로 준비됩니다.
+        큰 버튼을 선택하면 실험실과 초기값이 준비됩니다.
       </p>
 
       <div class="mode-grid">
-        <button type="button" class="mode-card" data-select-mode="projectile">
-          <span>↗</span>
+        <button class="mode-card" type="button" data-mode="projectile">
+          <span class="mode-icon">↗</span>
           <strong>포물선 운동</strong>
           <small>발사 각도와 중력</small>
         </button>
 
-        <button type="button" class="mode-card" data-select-mode="freefall">
-          <span>↓</span>
+        <button class="mode-card" type="button" data-mode="freefall">
+          <span class="mode-icon">↓</span>
           <strong>자유 낙하</strong>
           <small>높이와 중력가속도</small>
         </button>
 
-        <button type="button" class="mode-card" data-select-mode="friction">
-          <span>▰</span>
+        <button class="mode-card" type="button" data-mode="friction">
+          <span class="mode-icon">▰</span>
           <strong>마찰 운동</strong>
           <small>수평면에서의 감속</small>
         </button>
 
-        <button type="button" class="mode-card" data-select-mode="drag">
-          <span>≋</span>
+        <button class="mode-card" type="button" data-mode="drag">
+          <span class="mode-icon">≋</span>
           <strong>공기저항</strong>
-          <small>항력과 바람</small>
+          <small>이차 항력과 바람</small>
         </button>
 
-        <button type="button" class="mode-card" data-select-mode="collision">
-          <span>● ●</span>
+        <button class="mode-card" type="button" data-mode="collision">
+          <span class="mode-icon">● ●</span>
           <strong>충돌</strong>
           <small>두 물체의 질량과 속도</small>
         </button>
 
-        <button type="button" class="mode-card" data-select-mode="incline">
-          <span>◢</span>
+        <button class="mode-card" type="button" data-mode="incline">
+          <span class="mode-icon">◢</span>
           <strong>빗면 운동</strong>
           <small>경사면 중력과 마찰</small>
         </button>
 
-        <button type="button" class="mode-card" data-select-mode="circular">
-          <span>↻</span>
+        <button class="mode-card" type="button" data-mode="circular">
+          <span class="mode-icon">↻</span>
           <strong>원운동</strong>
           <small>구심가속도와 각속도</small>
         </button>
 
-        <button type="button" class="mode-card" data-select-mode="torque">
-          <span>⟲</span>
+        <button class="mode-card" type="button" data-mode="torque">
+          <span class="mode-icon">⟲</span>
           <strong>돌림힘</strong>
           <small>τ = Iα 회전 운동</small>
         </button>
 
-        <button type="button" class="mode-card" data-select-mode="escape">
-          <span>🚀</span>
+        <button class="mode-card" type="button" data-mode="escape">
+          <span class="mode-icon">🚀</span>
           <strong>탈출 속도</strong>
-          <small>중심천체의 중력장</small>
+          <small>중심천체의 역제곱 중력</small>
         </button>
       </div>
     </section>
   </div>
 
-  <!-- 공식 설명 창 -->
+  <!-- 공식 설명 모달 -->
   <div id="formulaModal" class="modal-backdrop hidden">
     <section class="popup-dialog">
       <div class="popup-header">
@@ -86,28 +947,21 @@
           <p class="eyebrow">FORMULA GUIDE</p>
           <h2 id="formulaTitle">공식 설명</h2>
         </div>
-
-        <button id="closeFormulaButton" class="close-button" type="button">
-          ×
-        </button>
+        <button id="closeFormula" class="close-button" type="button">×</button>
       </div>
-
       <div id="formulaDescription" class="formula-description"></div>
     </section>
   </div>
 
-  <!-- 물리량 표시 설정 창 -->
+  <!-- 물리량 설정 모달 -->
   <div id="quantityModal" class="modal-backdrop hidden">
     <section class="popup-dialog">
       <div class="popup-header">
         <div>
           <p class="eyebrow">DISPLAY SETTINGS</p>
-          <h2>실시간 물리량 선택</h2>
+          <h2>표시할 물리량</h2>
         </div>
-
-        <button id="closeQuantityButton" class="close-button" type="button">
-          ×
-        </button>
+        <button id="closeQuantity" class="close-button" type="button">×</button>
       </div>
 
       <div class="quantity-grid">
@@ -119,465 +973,1352 @@
         <label><input type="checkbox" data-quantity="force"> 알짜힘 F⃗net</label>
         <label><input type="checkbox" data-quantity="momentum"> 운동량 p⃗</label>
         <label><input type="checkbox" data-quantity="energy" checked> 에너지</label>
-        <label><input type="checkbox" data-quantity="angular" checked> 각운동량</label>
+        <label><input type="checkbox" data-quantity="angular" checked> 각운동 물리량</label>
       </div>
 
-      <button id="applyQuantityButton" class="primary full-button" type="button">
-        적용
-      </button>
+      <button id="applyQuantity" class="popup-primary" type="button">적용</button>
     </section>
   </div>
 
   <header>
     <div class="brand">
       <div class="logo">P</div>
-
       <div>
         <h1>Physics Simulator</h1>
         <p>당곡고 인터랙티브 물리 실험실</p>
       </div>
     </div>
 
-    <button id="openModeButton" class="outline-button" type="button">
+    <button id="openMode" class="outline-button" type="button">
       운동 다시 선택
     </button>
   </header>
 
-  <main>
-    <aside class="controls-panel">
+  <main class="app">
+    <aside class="control-panel">
       <div class="panel-heading">
         <div>
           <p class="eyebrow">EXPERIMENT CONTROL</p>
           <h2>실험 설정</h2>
         </div>
-
         <span id="modeBadge">포물선 운동</span>
       </div>
 
-      <section class="setting-section">
-        <h3>운동과 환경</h3>
-
-        <label>
-          운동 종류
-          <select id="mode">
-            <option value="projectile">포물선 운동</option>
-            <option value="freefall">자유 낙하</option>
-            <option value="friction">마찰 운동</option>
-            <option value="drag">공기저항과 바람</option>
-            <option value="collision">충돌</option>
-            <option value="incline">빗면 운동</option>
-            <option value="circular">원운동</option>
-            <option value="torque">돌림힘</option>
-            <option value="escape">탈출 속도</option>
-          </select>
-        </label>
-
-        <label>
-          환경
-          <select id="environment">
-            <option value="earth">Earth · 지구</option>
-            <option value="moon">Moon · 달</option>
-            <option value="mars">Mars · 화성</option>
-            <option value="space">Space · 우주</option>
-            <option value="vacuum">Vacuum · 지구 중력 진공</option>
-          </select>
-        </label>
-      </section>
-
-      <section class="setting-section">
-        <h3>공통 초기 조건</h3>
-
-        <div class="two-columns">
+      <details open>
+        <summary>운동과 환경</summary>
+        <div class="details-content">
           <label>
-            질량 m
-            <div class="input-unit">
-              <input id="mass" type="number" value="1" min="0.01" step="0.1">
-              <span>kg</span>
-            </div>
+            운동 종류
+            <select id="mode">
+              <option value="projectile">포물선 운동</option>
+              <option value="freefall">자유 낙하</option>
+              <option value="friction">마찰 운동</option>
+              <option value="drag">공기저항과 바람</option>
+              <option value="collision">충돌</option>
+              <option value="incline">빗면 운동</option>
+              <option value="circular">원운동</option>
+              <option value="torque">돌림힘</option>
+              <option value="escape">탈출 속도</option>
+            </select>
           </label>
 
           <label>
-            초기 속력 v₀
-            <div class="input-unit">
-              <input id="speed" type="number" value="15" step="0.1">
-              <span>m·s⁻¹</span>
-            </div>
+            환경
+            <select id="environment">
+              <option value="earth">Earth · 지구</option>
+              <option value="moon">Moon · 달</option>
+              <option value="mars">Mars · 화성</option>
+              <option value="space">Space · 우주</option>
+              <option value="vacuum">Vacuum · 지구 중력 진공</option>
+            </select>
           </label>
         </div>
+      </details>
 
-        <label>
-          발사 각도 θ
-          <div class="input-unit">
-            <input id="angle" type="number" value="60" step="1">
-            <span>°</span>
-          </div>
-        </label>
-
-        <div class="direction-buttons">
-          <button type="button" data-angle="90">↑ 위</button>
-          <button type="button" data-angle="270">↓ 아래</button>
-          <button type="button" data-angle="180">← 왼쪽</button>
-          <button type="button" data-angle="0">→ 오른쪽</button>
-        </div>
-
-        <p class="help-text">
-          추가 가속도는 중력·항력 등으로 계산한 가속도에 계속 더해집니다.
-        </p>
-
-        <div class="two-columns">
-          <label>
-            추가 가속도 aₓ
-            <div class="input-unit">
-              <input id="extraAx" type="number" value="0" step="0.1">
-              <span>m·s⁻²</span>
-            </div>
-          </label>
-
-          <label>
-            추가 가속도 aᵧ
-            <div class="input-unit">
-              <input id="extraAy" type="number" value="0" step="0.1">
-              <span>m·s⁻²</span>
-            </div>
-          </label>
-        </div>
-      </section>
-
-      <!-- 충돌 모드에서만 표시 -->
-      <section id="collisionSettings" class="setting-section hidden-section">
-        <h3>충돌 물체 설정</h3>
-
-        <div class="object-card object-one">
-          <strong>물체 1 · 노란색</strong>
-
-          <div class="three-columns">
+      <details open>
+        <summary>공통 초기 조건</summary>
+        <div class="details-content">
+          <div class="two-columns">
             <label>
-              질량 m₁
+              질량 m
               <div class="input-unit">
-                <input id="mass1" type="number" value="1" min="0.01" step="0.1">
+                <input id="mass" type="number" value="1" min="0.01" step="0.1">
                 <span>kg</span>
               </div>
             </label>
 
             <label>
-              속도 v₁
+              초기 속력 v₀
               <div class="input-unit">
-                <input id="velocity1" type="number" value="15" step="0.1">
+                <input id="speed" type="number" value="15" step="0.1">
                 <span>m·s⁻¹</span>
               </div>
             </label>
-
-            <label>
-              위치 x₁
-              <div class="input-unit">
-                <input id="position1" type="number" value="-20" step="0.1">
-                <span>m</span>
-              </div>
-            </label>
           </div>
-        </div>
 
-        <div class="object-card object-two">
-          <strong>물체 2 · 초록색</strong>
-
-          <div class="three-columns">
-            <label>
-              질량 m₂
-              <div class="input-unit">
-                <input id="mass2" type="number" value="2" min="0.01" step="0.1">
-                <span>kg</span>
-              </div>
-            </label>
-
-            <label>
-              속도 v₂
-              <div class="input-unit">
-                <input id="velocity2" type="number" value="0" step="0.1">
-                <span>m·s⁻¹</span>
-              </div>
-            </label>
-
-            <label>
-              위치 x₂
-              <div class="input-unit">
-                <input id="position2" type="number" value="10" step="0.1">
-                <span>m</span>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <label>
-          반발계수 e
-          <div class="input-unit">
-            <input id="restitution" type="number" value="1" min="0" max="1" step="0.05">
-            <span>−</span>
-          </div>
-        </label>
-      </section>
-
-      <!-- 모드별 설정 -->
-      <section id="modeSettings" class="setting-section">
-        <h3>모드별 설정</h3>
-
-        <div class="mode-setting" data-for-mode="freefall">
           <label>
-            시작 높이 h₀
+            발사 각도 θ
             <div class="input-unit">
-              <input id="freefallHeight" type="number" value="25" min="1" step="1">
-              <span>m</span>
-            </div>
-          </label>
-        </div>
-
-        <div class="mode-setting" data-for-mode="incline">
-          <label>
-            빗면 각도 β
-            <div class="input-unit">
-              <input id="inclineAngle" type="number" value="30" min="1" max="75" step="1">
+              <input id="angle" type="number" value="60" step="1">
               <span>°</span>
             </div>
           </label>
-        </div>
 
-        <div class="mode-setting" data-for-mode="circular">
+          <div class="direction-buttons">
+            <button type="button" data-angle="90">↑ 위</button>
+            <button type="button" data-angle="270">↓ 아래</button>
+            <button type="button" data-angle="180">← 왼쪽</button>
+            <button type="button" data-angle="0">→ 오른쪽</button>
+          </div>
+
+          <p class="help">
+            아래 값은 다른 힘에서 계산한 가속도에 계속 더해지는 외부 추가
+            가속도입니다.
+          </p>
+
+          <div class="two-columns">
+            <label>
+              추가 가속도 aₓ
+              <div class="input-unit">
+                <input id="extraAx" type="number" value="0" step="0.1">
+                <span>m·s⁻²</span>
+              </div>
+            </label>
+
+            <label>
+              추가 가속도 aᵧ
+              <div class="input-unit">
+                <input id="extraAy" type="number" value="0" step="0.1">
+                <span>m·s⁻²</span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </details>
+
+      <details id="collisionPanel">
+        <summary>충돌 물체 설정</summary>
+        <div class="details-content">
+          <div class="object-card object-one">
+            <strong>물체 1 · 노란색</strong>
+            <div class="three-columns">
+              <label>
+                질량 m₁
+                <div class="input-unit">
+                  <input id="mass1" type="number" value="1" min="0.01" step="0.1">
+                  <span>kg</span>
+                </div>
+              </label>
+              <label>
+                속도 v₁
+                <div class="input-unit">
+                  <input id="velocity1" type="number" value="15" step="0.1">
+                  <span>m·s⁻¹</span>
+                </div>
+              </label>
+              <label>
+                위치 x₁
+                <div class="input-unit">
+                  <input id="position1" type="number" value="-20" step="0.1">
+                  <span>m</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="object-card object-two">
+            <strong>물체 2 · 초록색</strong>
+            <div class="three-columns">
+              <label>
+                질량 m₂
+                <div class="input-unit">
+                  <input id="mass2" type="number" value="2" min="0.01" step="0.1">
+                  <span>kg</span>
+                </div>
+              </label>
+              <label>
+                속도 v₂
+                <div class="input-unit">
+                  <input id="velocity2" type="number" value="0" step="0.1">
+                  <span>m·s⁻¹</span>
+                </div>
+              </label>
+              <label>
+                위치 x₂
+                <div class="input-unit">
+                  <input id="position2" type="number" value="10" step="0.1">
+                  <span>m</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
           <label>
-            원운동 반지름 r
+            반발계수 e
             <div class="input-unit">
-              <input id="circleRadius" type="number" value="10" min="1" step="0.5">
+              <input id="restitution" type="number" value="1" min="0" max="1" step="0.05">
+              <span>−</span>
+            </div>
+          </label>
+        </div>
+      </details>
+
+      <details>
+        <summary>모드별 세부 설정</summary>
+        <div class="details-content">
+          <div class="mode-specific" data-specific="freefall">
+            <label>
+              시작 높이 h₀
+              <div class="input-unit">
+                <input id="freefallHeight" type="number" value="25" min="1" step="1">
+                <span>m</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="mode-specific" data-specific="incline">
+            <label>
+              빗면 각도 β
+              <div class="input-unit">
+                <input id="inclineAngle" type="number" value="30" min="1" max="75" step="1">
+                <span>°</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="mode-specific" data-specific="circular">
+            <label>
+              원운동 반지름 r
+              <div class="input-unit">
+                <input id="circleRadius" type="number" value="10" min="1" step="0.5">
+                <span>m</span>
+              </div>
+            </label>
+            <label>
+              각속도 ω
+              <div class="input-unit">
+                <input id="angularSpeed" type="number" value="1" step="0.1">
+                <span>rad·s⁻¹</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="mode-specific" data-specific="torque">
+            <label>
+              돌림힘 τ
+              <div class="input-unit">
+                <input id="torque" type="number" value="10" step="0.1">
+                <span>N·m</span>
+              </div>
+            </label>
+            <label>
+              관성 모멘트 I
+              <div class="input-unit">
+                <input id="inertia" type="number" value="5" min="0.01" step="0.1">
+                <span>kg·m²</span>
+              </div>
+            </label>
+            <label>
+              초기 각속도 ω₀
+              <div class="input-unit">
+                <input id="initialOmega" type="number" value="0" step="0.1">
+                <span>rad·s⁻¹</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="mode-specific" data-specific="escape">
+            <label>
+              중심천체 질량 M
+              <div class="input-unit">
+                <input id="planetMass" type="number" value="5.972e24">
+                <span>kg</span>
+              </div>
+            </label>
+            <label>
+              중심천체 반지름 R
+              <div class="input-unit">
+                <input id="planetRadius" type="number" value="6.371e6">
+                <span>m</span>
+              </div>
+            </label>
+            <button id="setEscapeSpeed" class="secondary-button" type="button">
+              지표 탈출 속도로 설정
+            </button>
+          </div>
+
+          <p id="noSpecific" class="help">
+            현재 운동은 별도의 추가 설정 없이 실행할 수 있습니다.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>환경 물리값</summary>
+        <div class="details-content">
+          <p class="help">
+            체크한 항목만 환경 프리셋 대신 사용자 값이 적용됩니다.
+          </p>
+
+          <div class="custom-row">
+            <label class="check-label">
+              <input id="useCustomG" type="checkbox">
+              사용자 g
+            </label>
+            <div class="input-unit">
+              <input id="customG" type="number" value="9.8" step="0.01">
+              <span>m·s⁻²</span>
+            </div>
+          </div>
+
+          <div class="custom-row">
+            <label class="check-label">
+              <input id="useCustomMu" type="checkbox">
+              사용자 μ
+            </label>
+            <div class="input-unit">
+              <input id="customMu" type="number" value="0.3" min="0" step="0.01">
+              <span>−</span>
+            </div>
+          </div>
+
+          <div class="custom-row">
+            <label class="check-label">
+              <input id="useCustomCd" type="checkbox">
+              사용자 Cᴅ
+            </label>
+            <div class="input-unit">
+              <input id="customCd" type="number" value="0.47" min="0" step="0.01">
+              <span>−</span>
+            </div>
+          </div>
+
+          <div class="custom-row">
+            <label class="check-label">
+              <input id="useCustomWind" type="checkbox">
+              사용자 바람
+            </label>
+            <div class="input-unit">
+              <input id="customWind" type="number" value="0" step="0.1">
+              <span>m·s⁻¹</span>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>표시와 시간</summary>
+        <div class="details-content">
+          <div class="toggle-row">
+            <label class="check-label">
+              <input id="showTrail" type="checkbox" checked>
+              운동 경로 표시
+            </label>
+            <button id="clearTrail" class="small-button" type="button">
+              경로 지우기
+            </button>
+          </div>
+
+          <label>
+            무대 너비
+            <div class="input-unit">
+              <input id="stageWidth" type="number" value="80" min="20" step="5">
               <span>m</span>
             </div>
           </label>
 
           <label>
-            각속도 ω
-            <div class="input-unit">
-              <input id="angularSpeed" type="number" value="1" step="0.1">
-              <span>rad·s⁻¹</span>
-            </div>
+            시간 배율
+            <select id="timeScale">
+              <option value="0.25">0.25×</option>
+              <option value="0.5">0.5×</option>
+              <option value="1" selected>1×</option>
+              <option value="2">2×</option>
+              <option value="4">4×</option>
+            </select>
           </label>
         </div>
-
-        <div class="mode-setting" data-for-mode="torque">
-          <label>
-            돌림힘 τ
-            <div class="input-unit">
-              <input id="torque" type="number" value="10" step="0.1">
-              <span>N·m</span>
-            </div>
-          </label>
-
-          <label>
-            관성 모멘트 I
-            <div class="input-unit">
-              <input id="inertia" type="number" value="5" min="0.01" step="0.1">
-              <span>kg·m²</span>
-            </div>
-          </label>
-
-          <label>
-            초기 각속도 ω₀
-            <div class="input-unit">
-              <input id="initialOmega" type="number" value="0" step="0.1">
-              <span>rad·s⁻¹</span>
-            </div>
-          </label>
-        </div>
-
-        <div class="mode-setting" data-for-mode="escape">
-          <label>
-            중심천체 질량 M
-            <div class="input-unit">
-              <input id="planetMass" type="number" value="5.972e24">
-              <span>kg</span>
-            </div>
-          </label>
-
-          <label>
-            중심천체 반지름 R
-            <div class="input-unit">
-              <input id="planetRadius" type="number" value="6.371e6">
-              <span>m</span>
-            </div>
-          </label>
-
-          <button id="setEscapeSpeedButton" type="button" class="secondary-button">
-            지표 탈출 속도로 설정
-          </button>
-        </div>
-
-        <p id="noModeSettings" class="help-text">
-          이 운동은 별도의 추가 설정 없이 실행할 수 있습니다.
-        </p>
-      </section>
-
-      <section class="setting-section">
-        <h3>환경 물리값</h3>
-
-        <p class="help-text">
-          체크한 항목만 환경 프리셋 대신 사용자 값이 적용됩니다.
-        </p>
-
-        <div class="custom-row">
-          <label class="check-label">
-            <input id="useCustomG" type="checkbox">
-            사용자 g
-          </label>
-
-          <div class="input-unit">
-            <input id="customG" type="number" value="9.8" step="0.01">
-            <span>m·s⁻²</span>
-          </div>
-        </div>
-
-        <div class="custom-row">
-          <label class="check-label">
-            <input id="useCustomMu" type="checkbox">
-            사용자 μ
-          </label>
-
-          <div class="input-unit">
-            <input id="customMu" type="number" value="0.3" min="0" step="0.01">
-            <span>−</span>
-          </div>
-        </div>
-
-        <div class="custom-row">
-          <label class="check-label">
-            <input id="useCustomCd" type="checkbox">
-            사용자 Cᴅ
-          </label>
-
-          <div class="input-unit">
-            <input id="customCd" type="number" value="0.47" min="0" step="0.01">
-            <span>−</span>
-          </div>
-        </div>
-
-        <div class="custom-row">
-          <label class="check-label">
-            <input id="useCustomWind" type="checkbox">
-            사용자 바람
-          </label>
-
-          <div class="input-unit">
-            <input id="customWind" type="number" value="0" step="0.1">
-            <span>m·s⁻¹</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="setting-section">
-        <h3>표시와 시간</h3>
-
-        <div class="toggle-row">
-          <label class="check-label">
-            <input id="showTrail" type="checkbox" checked>
-            운동 경로 표시
-          </label>
-
-          <button id="clearTrailButton" class="small-button" type="button">
-            경로 지우기
-          </button>
-        </div>
-
-        <label>
-          무대 너비
-          <div class="input-unit">
-            <input id="stageWidth" type="number" value="80" min="20" step="5">
-            <span>m</span>
-          </div>
-        </label>
-
-        <label>
-          시간 배율
-          <select id="timeScale">
-            <option value="0.25">0.25×</option>
-            <option value="0.5">0.5×</option>
-            <option value="1" selected>1×</option>
-            <option value="2">2×</option>
-            <option value="4">4×</option>
-          </select>
-        </label>
-      </section>
+      </details>
 
       <div class="action-grid">
-        <button id="startButton" class="primary" type="button">
-          ▶ 처음부터 실행
-        </button>
-
-        <button id="playPauseButton" type="button">
-          ▶ 재생
-        </button>
-
-        <button id="resetButton" type="button">
-          ↻ 초기화
-        </button>
+        <button id="start" class="primary" type="button">▶ 처음부터</button>
+        <button id="playPause" type="button">▶ 재생</button>
+        <button id="reset" type="button">↻ 초기화</button>
       </div>
 
       <div class="timeline-box">
-        <div>
+        <div class="timeline-heading">
           <span>시간 탐색</span>
           <output id="timelineOutput">0.00 s</output>
         </div>
-
         <input id="timeline" type="range" min="0" max="0" value="0" step="1">
-
-        <small>과거 시점으로 이동한 뒤 다시 재생할 수 있습니다.</small>
+        <small>과거 상태를 선택한 후 다시 재생할 수 있습니다.</small>
       </div>
 
       <p id="message" class="message">
-        처음 실행할 운동을 선택하세요.
+        운동을 선택하고 실행해 주세요.
       </p>
     </aside>
 
-    <section class="simulation-panel">
-      <div id="canvasContainer"></div>
+    <section id="simulationPanel" class="simulation-panel">
+      <canvas id="simulationCanvas"></canvas>
 
       <div class="camera-tools">
-        <button id="zoomInButton" type="button" title="확대">＋</button>
-        <button id="zoomOutButton" type="button" title="축소">−</button>
-        <button id="fitCameraButton" type="button">화면 맞춤</button>
+        <button id="zoomIn" type="button">＋</button>
+        <button id="zoomOut" type="button">−</button>
+        <button id="fitCamera" type="button">화면 맞춤</button>
       </div>
 
       <div class="formula-card overlay-card">
         <div class="card-heading">
           <strong>적용 공식</strong>
-          <button id="formulaHelpButton" type="button">설명</button>
+          <button id="formulaHelp" type="button">설명</button>
         </div>
-
         <pre id="formulaText"></pre>
       </div>
 
       <div class="info-card overlay-card">
         <div class="card-heading">
           <strong>실시간 물리량</strong>
-          <button id="quantityButton" type="button">표시 설정</button>
+          <button id="quantitySettings" type="button">표시 설정</button>
         </div>
-
         <div id="physicsInfo"></div>
       </div>
 
       <p class="camera-guide">
-        마우스 휠: 확대·축소 · 왼쪽 드래그: 회전 · 오른쪽 드래그: 이동
+        휠: 확대·축소 · 드래그: 화면 이동 · ＋/−: 확대·축소
       </p>
     </section>
   </main>
 
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.180.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.180.0/examples/jsm/"
+  <script>
+    "use strict";
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       상수와 데이터
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+    const G = 6.67430e-11;
+    const FIXED_DT = 0.01;
+    const HISTORY_INTERVAL = 5;
+    const MAX_HISTORY = 2400;
+
+    const ENVIRONMENTS = {
+      earth: {
+        name: "Earth · 지구",
+        g: 9.8,
+        mu: 0.30,
+        cd: 0.47,
+        rho: 1.225,
+        wind: 0,
+        sky: "#08172d",
+        ground: "#616b76"
+      },
+      moon: {
+        name: "Moon · 달",
+        g: 1.62,
+        mu: 0.20,
+        cd: 0,
+        rho: 0,
+        wind: 0,
+        sky: "#010307",
+        ground: "#9299a1"
+      },
+      mars: {
+        name: "Mars · 화성",
+        g: 3.72,
+        mu: 0.40,
+        cd: 0.47,
+        rho: 0.020,
+        wind: -3,
+        sky: "#2b0d06",
+        ground: "#b75525"
+      },
+      space: {
+        name: "Space · 우주",
+        g: 0,
+        mu: 0,
+        cd: 0,
+        rho: 0,
+        wind: 0,
+        sky: "#000000",
+        ground: "#131820"
+      },
+      vacuum: {
+        name: "Vacuum · 지구 중력 진공",
+        g: 9.8,
+        mu: 0,
+        cd: 0,
+        rho: 0,
+        wind: 0,
+        sky: "#06101f",
+        ground: "#48515c"
+      }
+    };
+
+    const MODE_NAMES = {
+      projectile: "포물선 운동",
+      freefall: "자유 낙하",
+      friction: "마찰 운동",
+      drag: "공기저항과 바람",
+      collision: "충돌",
+      incline: "빗면 운동",
+      circular: "원운동",
+      torque: "돌림힘",
+      escape: "탈출 속도"
+    };
+
+    const MODE_DEFAULTS = {
+      projectile: { speed: 15, angle: 60 },
+      freefall: { speed: 0, angle: 270 },
+      friction: { speed: 15, angle: 0 },
+      drag: { speed: 20, angle: 35 },
+      collision: { speed: 15, angle: 0 },
+      incline: { speed: 0, angle: 0 },
+      circular: { speed: 10, angle: 0 },
+      torque: { speed: 0, angle: 0 },
+      escape: { speed: 11200, angle: 0 }
+    };
+
+    const FORMULAS = {
+      projectile: {
+        title: "포물선 운동",
+        short:
+`x = x₀ + v₀cosθ·t
+y = y₀ + v₀sinθ·t − ½gt²
+F⃗g = m g⃗`,
+        description:
+          "공기저항을 무시하면 수평 방향 가속도는 0이고 수직 방향에는 " +
+          "중력가속도 −g가 작용합니다. 수평속도는 일정하고 수직속도는 " +
+          "시간에 따라 변합니다."
+      },
+      freefall: {
+        title: "자유 낙하",
+        short:
+`vᵧ = v₀ᵧ − gt
+y = y₀ + v₀ᵧt − ½gt²
+F⃗g = m g⃗`,
+        description:
+          "물체가 중력만 받으며 수직으로 낙하하는 운동입니다. 공기저항을 " +
+          "무시하면 질량과 관계없이 같은 중력가속도를 갖습니다."
+      },
+      friction: {
+        title: "마찰 운동",
+        short:
+`fₖ = μₖN
+N = mg
+aₓ = −μₖg·sgn(vₓ)`,
+        description:
+          "운동마찰력은 수직항력에 비례하며 물체의 운동 방향과 반대로 작용합니다."
+      },
+      drag: {
+        title: "공기저항과 바람",
+        short:
+`v⃗rel = v⃗ − v⃗wind
+F⃗D = −½ρCᴅA|v⃗rel|v⃗rel`,
+        description:
+          "항력은 공기 기준 상대속도의 반대 방향으로 작용하며 상대속력의 " +
+          "제곱에 비례합니다. ρ는 유체 밀도, Cᴅ는 항력계수, A는 단면적입니다."
+      },
+      collision: {
+        title: "두 물체의 충돌",
+        short:
+`m₁u₁ + m₂u₂ = m₁v₁ + m₂v₂
+v₂ − v₁ = e(u₁ − u₂)
+0 ≤ e ≤ 1`,
+        description:
+          "운동량 보존과 반발계수 e를 사용합니다. e = 1이면 완전 탄성 " +
+          "충돌이고 e = 0이면 완전 비탄성 충돌입니다."
+      },
+      incline: {
+        title: "빗면 운동",
+        short:
+`F∥ = mg sinβ
+N = mg cosβ
+fₖ = μₖN`,
+        description:
+          "중력을 빗면에 나란한 성분과 수직인 성분으로 분해합니다. 마찰력은 " +
+          "빗면을 따라 움직이는 방향의 반대로 작용합니다."
+      },
+      circular: {
+        title: "등속 원운동",
+        short:
+`v = rω
+a꜀ = rω² = v²/r
+F꜀ = mrω²`,
+        description:
+          "속력은 일정하지만 속도 방향이 계속 변하므로 원 중심을 향하는 " +
+          "구심가속도와 구심력이 존재합니다."
+      },
+      torque: {
+        title: "돌림힘",
+        short:
+`τ = Iα
+ω = ω₀ + αt
+θ = θ₀ + ω₀t + ½αt²`,
+        description:
+          "돌림힘 τ는 각가속도 α를 만듭니다. 관성 모멘트 I가 클수록 같은 " +
+          "돌림힘에서 각가속도는 작습니다."
+      },
+      escape: {
+        title: "탈출 속도",
+        short:
+`vₑ = √(2GM/R)
+a⃗ = −GM r⃗/r³`,
+        description:
+          "추가 추진 없이 중심천체의 중력장을 벗어날 수 있는 최소 초기속도입니다. " +
+          "이 모드는 거리에 따라 변하는 역제곱 중력을 사용합니다."
+      }
+    };
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       DOM
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+    const $ = (id) => document.getElementById(id);
+
+    const dom = {
+      modeModal: $("modeModal"),
+      formulaModal: $("formulaModal"),
+      quantityModal: $("quantityModal"),
+
+      openMode: $("openMode"),
+      mode: $("mode"),
+      environment: $("environment"),
+      modeBadge: $("modeBadge"),
+
+      mass: $("mass"),
+      speed: $("speed"),
+      angle: $("angle"),
+      extraAx: $("extraAx"),
+      extraAy: $("extraAy"),
+
+      collisionPanel: $("collisionPanel"),
+      mass1: $("mass1"),
+      velocity1: $("velocity1"),
+      position1: $("position1"),
+      mass2: $("mass2"),
+      velocity2: $("velocity2"),
+      position2: $("position2"),
+      restitution: $("restitution"),
+
+      freefallHeight: $("freefallHeight"),
+      inclineAngle: $("inclineAngle"),
+      circleRadius: $("circleRadius"),
+      angularSpeed: $("angularSpeed"),
+      torque: $("torque"),
+      inertia: $("inertia"),
+      initialOmega: $("initialOmega"),
+      planetMass: $("planetMass"),
+      planetRadius: $("planetRadius"),
+      setEscapeSpeed: $("setEscapeSpeed"),
+
+      useCustomG: $("useCustomG"),
+      customG: $("customG"),
+      useCustomMu: $("useCustomMu"),
+      customMu: $("customMu"),
+      useCustomCd: $("useCustomCd"),
+      customCd: $("customCd"),
+      useCustomWind: $("useCustomWind"),
+      customWind: $("customWind"),
+
+      showTrail: $("showTrail"),
+      clearTrail: $("clearTrail"),
+      stageWidth: $("stageWidth"),
+      timeScale: $("timeScale"),
+
+      start: $("start"),
+      playPause: $("playPause"),
+      reset: $("reset"),
+      timeline: $("timeline"),
+      timelineOutput: $("timelineOutput"),
+      message: $("message"),
+
+      zoomIn: $("zoomIn"),
+      zoomOut: $("zoomOut"),
+      fitCamera: $("fitCamera"),
+
+      formulaText: $("formulaText"),
+      formulaHelp: $("formulaHelp"),
+      formulaTitle: $("formulaTitle"),
+      formulaDescription: $("formulaDescription"),
+      closeFormula: $("closeFormula"),
+
+      quantitySettings: $("quantitySettings"),
+      closeQuantity: $("closeQuantity"),
+      applyQuantity: $("applyQuantity"),
+
+      physicsInfo: $("physicsInfo"),
+
+      panel: $("simulationPanel"),
+      canvas: $("simulationCanvas")
+    };
+
+    const ctx = dom.canvas.getContext("2d");
+
+    function numberValue(element, fallback = 0) {
+      const value = Number(element.value);
+      return Number.isFinite(value) ? value : fallback;
+    }
+
+    function clamp(value, minimum, maximum) {
+      return Math.min(Math.max(value, minimum), maximum);
+    }
+
+    function settings() {
+      const preset = ENVIRONMENTS[dom.environment.value];
+
+      return {
+        mode: dom.mode.value,
+        environmentKey: dom.environment.value,
+        environment: preset,
+
+        mass: Math.max(numberValue(dom.mass, 1), 0.01),
+        speed: numberValue(dom.speed, 15),
+        angle: numberValue(dom.angle, 0),
+        extraAx: numberValue(dom.extraAx, 0),
+        extraAy: numberValue(dom.extraAy, 0),
+
+        g: dom.useCustomG.checked
+          ? numberValue(dom.customG, preset.g)
+          : preset.g,
+
+        mu: dom.useCustomMu.checked
+          ? Math.max(numberValue(dom.customMu, preset.mu), 0)
+          : preset.mu,
+
+        cd: dom.useCustomCd.checked
+          ? Math.max(numberValue(dom.customCd, preset.cd), 0)
+          : preset.cd,
+
+        wind: dom.useCustomWind.checked
+          ? numberValue(dom.customWind, preset.wind)
+          : preset.wind,
+
+        rho: preset.rho,
+
+        mass1: Math.max(numberValue(dom.mass1, 1), 0.01),
+        velocity1: numberValue(dom.velocity1, 15),
+        position1: numberValue(dom.position1, -20),
+
+        mass2: Math.max(numberValue(dom.mass2, 2), 0.01),
+        velocity2: numberValue(dom.velocity2, 0),
+        position2: numberValue(dom.position2, 10),
+
+        restitution: clamp(numberValue(dom.restitution, 1), 0, 1),
+
+        freefallHeight: Math.max(numberValue(dom.freefallHeight, 25), 1),
+        inclineAngle: clamp(numberValue(dom.inclineAngle, 30), 1, 75),
+
+        circleRadius: Math.max(numberValue(dom.circleRadius, 10), 1),
+        angularSpeed: numberValue(dom.angularSpeed, 1),
+
+        torque: numberValue(dom.torque, 10),
+        inertia: Math.max(numberValue(dom.inertia, 5), 0.01),
+        initialOmega: numberValue(dom.initialOmega, 0),
+
+        planetMass: Math.max(numberValue(dom.planetMass, 5.972e24), 1),
+        planetRadius: Math.max(numberValue(dom.planetRadius, 6.371e6), 1),
+
+        showTrail: dom.showTrail.checked,
+        stageWidth: Math.max(numberValue(dom.stageWidth, 80), 20),
+        timeScale: Math.max(numberValue(dom.timeScale, 1), 0.01)
+      };
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       상태
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+    const state = {
+      running: false,
+      elapsed: 0,
+      stepCount: 0,
+
+      x1: 0,
+      y1: 0,
+      vx1: 0,
+      vy1: 0,
+      ax1: 0,
+      ay1: 0,
+      fx1: 0,
+      fy1: 0,
+
+      x2: 0,
+      y2: 0,
+      vx2: 0,
+      vy2: 0,
+      ax2: 0,
+      ay2: 0,
+      fx2: 0,
+      fy2: 0,
+
+      theta: 0,
+      omega: 0,
+      alpha: 0,
+
+      collisionLocked: false,
+
+      escapeX: 0,
+      escapeY: 0,
+      escapeVx: 0,
+      escapeVy: 0,
+      escapeScale: 1,
+
+      trail1: [],
+      trail2: [],
+      history: [],
+      historyIndex: 0,
+
+      cameraX: 0,
+      cameraY: 5,
+      zoom: 1,
+
+      dragging: false,
+      lastPointerX: 0,
+      lastPointerY: 0
+    };
+
+    let selectedQuantities = new Set([
+      "time",
+      "position",
+      "velocity",
+      "acceleration",
+      "energy",
+      "angular"
+    ]);
+
+    let previousAnimationTime = performance.now();
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       UI 도우미
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+    function setMessage(message) {
+      dom.message.textContent = message;
+    }
+
+    function updateModeUI() {
+      const mode = dom.mode.value;
+
+      dom.modeBadge.textContent = MODE_NAMES[mode];
+      dom.collisionPanel.style.display =
+        mode === "collision" ? "block" : "none";
+
+      let activeSpecificCount = 0;
+
+      document.querySelectorAll("[data-specific]").forEach((element) => {
+        const active = element.dataset.specific === mode;
+        element.classList.toggle("active", active);
+
+        if (active) {
+          activeSpecificCount += 1;
+        }
+      });
+
+      $("noSpecific").style.display =
+        activeSpecificCount === 0 ? "block" : "none";
+
+      const formula = FORMULAS[mode];
+      let text = formula.short;
+
+      if (mode === "escape") {
+        const current = settings();
+        const escapeSpeed = Math.sqrt(
+          2 * G * current.planetMass / current.planetRadius
+        );
+        text += `\n\nvₑ = ${(escapeSpeed / 1000).toFixed(2)} km·s⁻¹`;
+      }
+
+      if (mode === "collision") {
+        text += `\n\ne = ${settings().restitution.toFixed(2)}`;
+      }
+
+      dom.formulaText.textContent = text;
+    }
+
+    function selectMode(mode) {
+      if (!MODE_NAMES[mode]) {
+        return;
+      }
+
+      const defaults = MODE_DEFAULTS[mode];
+
+      dom.mode.value = mode;
+      dom.speed.value = defaults.speed;
+      dom.angle.value = defaults.angle;
+
+      updateModeUI();
+      resetSimulation(true);
+
+      dom.modeModal.classList.add("hidden");
+      setMessage(`${MODE_NAMES[mode]} 모드가 선택되었습니다.`);
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       좌표와 Canvas
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+    function resizeCanvas() {
+      const rect = dom.panel.getBoundingClientRect();
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+
+      dom.canvas.width = Math.max(1, Math.round(rect.width * ratio));
+      dom.canvas.height = Math.max(1, Math.round(rect.height * ratio));
+      dom.canvas.style.width = `${rect.width}px`;
+      dom.canvas.style.height = `${rect.height}px`;
+
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+
+    function panelWidth() {
+      return dom.panel.clientWidth;
+    }
+
+    function panelHeight() {
+      return dom.panel.clientHeight;
+    }
+
+    function basePixelsPerMeter() {
+      const current = settings();
+      return Math.max(4, panelWidth() / current.stageWidth);
+    }
+
+    function worldToScreen(x, y) {
+      const scale = basePixelsPerMeter() * state.zoom;
+
+      return {
+        x: panelWidth() / 2 + (x - state.cameraX) * scale,
+        y: panelHeight() / 2 - (y - state.cameraY) * scale
+      };
+    }
+
+    function screenDeltaToWorld(dx, dy) {
+      const scale = basePixelsPerMeter() * state.zoom;
+
+      return {
+        x: dx / scale,
+        y: -dy / scale
+      };
+    }
+
+    function fitCamera() {
+      const current = settings();
+
+      state.cameraX = 0;
+      state.cameraY =
+        current.mode === "freefall"
+          ? current.freefallHeight / 2
+          : current.mode === "circular"
+            ? 5
+            : current.mode === "escape"
+              ? 0
+              : 5;
+
+      state.zoom =
+        current.mode === "escape"
+          ? 1.5
+          : current.mode === "circular"
+            ? Math.min(1.8, 20 / current.circleRadius)
+            : 1;
+    }
+
+    function drawGrid(current) {
+      const width = panelWidth();
+      const height = panelHeight();
+
+      const skyGradient = ctx.createLinearGradient(0, 0, 0, height);
+      skyGradient.addColorStop(0, current.environment.sky);
+      skyGradient.addColorStop(1, "#030913");
+
+      ctx.fillStyle = skyGradient;
+      ctx.fillRect(0, 0, width, height);
+
+      if (
+        current.environmentKey === "space" ||
+        current.environmentKey === "moon" ||
+        current.mode === "escape"
+      ) {
+        ctx.fillStyle = "rgba(255,255,255,0.8)";
+
+        for (let i = 0; i < 120; i += 1) {
+          const x = (i * 97) % width;
+          const y = (i * 53) % Math.max(height - 100, 1);
+          const radius = (i % 3 === 0) ? 1.2 : 0.7;
+
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      if (
+        current.mode === "escape" ||
+        current.mode === "circular" ||
+        current.mode === "torque" ||
+        current.mode === "incline" ||
+        current.environmentKey === "space"
+      ) {
+        return;
+      }
+
+      const groundLeft = worldToScreen(-current.stageWidth / 2, 0);
+      const groundRight = worldToScreen(current.stageWidth / 2, 0);
+
+      ctx.fillStyle = current.environment.ground;
+      ctx.fillRect(
+        groundLeft.x,
+        groundLeft.y,
+        groundRight.x - groundLeft.x,
+        Math.max(14, height - groundLeft.y)
+      );
+
+      ctx.strokeStyle = "rgba(92,133,173,0.25)";
+      ctx.lineWidth = 1;
+
+      const gridStep = current.stageWidth > 100 ? 10 : 5;
+
+      for (
+        let x = -current.stageWidth / 2;
+        x <= current.stageWidth / 2;
+        x += gridStep
+      ) {
+        const a = worldToScreen(x, 0);
+        const b = worldToScreen(x, 20);
+
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
       }
     }
-  </script>
 
-<script src="./mode-selector.js?v=31"></script>
+    function drawCircle(x, y, radiusMeters, fill, stroke = "#ffffff") {
+      const center = worldToScreen(x, y);
+      const radius = Math.max(
+        6,
+        radiusMeters * basePixelsPerMeter() * state.zoom
+      );
 
-<!-- 테스트 중에는 고장 난 시뮬레이터를 잠시 끔 -->
-<!--
-<script type="module" src="./simulator.js?v=31"></script>
--->
-</body>
-</html>
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+
+      ctx.fillStyle = fill;
+      ctx.fill();
+
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = stroke;
+      ctx.stroke();
+    }
+
+    function drawTrail(points, color) {
+      if (!settings().showTrail || points.length < 2) {
+        return;
+      }
+
+      ctx.beginPath();
+
+      points.forEach((point, index) => {
+        const screen = worldToScreen(point.x, point.y);
+
+        if (index === 0) {
+          ctx.moveTo(screen.x, screen.y);
+        } else {
+          ctx.lineTo(screen.x, screen.y);
+        }
+      });
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    function drawIncline(current) {
+      const beta = current.inclineAngle * Math.PI / 180;
+      const halfLength = 17;
+
+      const low = {
+        x: -halfLength * Math.cos(beta),
+        y: 1 - halfLength * Math.sin(beta)
+      };
+
+      const high = {
+        x: halfLength * Math.cos(beta),
+        y: 1 + halfLength * Math.sin(beta)
+      };
+
+      const lowScreen = worldToScreen(low.x, low.y);
+      const highScreen = worldToScreen(high.x, high.y);
+
+      ctx.strokeStyle = "#7592ac";
+      ctx.lineWidth = 12;
+      ctx.lineCap = "round";
+
+      ctx.beginPath();
+      ctx.moveTo(lowScreen.x, lowScreen.y);
+      ctx.lineTo(highScreen.x, highScreen.y);
+      ctx.stroke();
+
+      ctx.lineCap = "butt";
+    }
+
+    function drawCircularGuide(current) {
+      const center = worldToScreen(0, 5);
+      const radius =
+        current.circleRadius * basePixelsPerMeter() * state.zoom;
+
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(93,154,208,0.72)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = "#5bd8ff";
+      ctx.fill();
+    }
+
+    function drawTorque() {
+      const center = worldToScreen(0, 4);
+      const length = 14 * basePixelsPerMeter() * state.zoom;
+
+      ctx.save();
+      ctx.translate(center.x, center.y);
+      ctx.rotate(-state.theta);
+
+      ctx.fillStyle = "#ff9a4a";
+      ctx.fillRect(-length / 2, -6, length, 12);
+
+      ctx.restore();
+
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, 8, 0, Math.PI * 2);
+      ctx.fillStyle = "#52d7ff";
+      ctx.fill();
+    }
+
+    function drawEscape(current) {
+      drawCircle(0, 0, 8 / (basePixelsPerMeter() * state.zoom), "#267bd1");
+
+      const displayX = state.escapeX * state.escapeScale;
+      const displayY = state.escapeY * state.escapeScale;
+
+      drawCircle(
+        displayX,
+        displayY,
+        1.1 / Math.max(basePixelsPerMeter() * state.zoom, 0.1),
+        "#ffda3d"
+      );
+    }
+
+    function render() {
+      const current = settings();
+
+      ctx.clearRect(0, 0, panelWidth(), panelHeight());
+      drawGrid(current);
+
+      if (current.mode === "incline") {
+        drawIncline(current);
+      }
+
+      if (current.mode === "circular") {
+        drawCircularGuide(current);
+      }
+
+      if (current.mode === "torque") {
+        drawTorque();
+        return;
+      }
+
+      if (current.mode === "escape") {
+        drawEscape(current);
+        return;
+      }
+
+      drawTrail(state.trail1, "#ff9f25");
+
+      if (current.mode === "collision") {
+        drawTrail(state.trail2, "#43df8b");
+      }
+
+      drawCircle(state.x1, state.y1, 0.7, "#ffda3d");
+
+      if (current.mode === "collision") {
+        drawCircle(state.x2, state.y2, 0.7, "#43df8b");
+      }
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       물리 상태 초기화
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+    function resetSimulation(resetCameraToo = false) {
+      const current = settings();
+      const launch = current.angle * Math.PI / 180;
+
+      state.running = false;
+      state.elapsed = 0;
+      state.stepCount = 0;
+
+      state.x1 = -current.stageWidth * 0.3;
+      state.y1 = 0.7;
+      state.vx1 = current.speed * Math.cos(launch);
+      state.vy1 = current.speed * Math.sin(launch);
+
+      state.ax1 = 0;
+      state.ay1 = 0;
+      state.fx1 = 0;
+      state.fy1 = 0;
+
+      state.x2 = current.position2;
+      state.y2 = 0.7;
+      state.vx2 = current.velocity2;
+      state.vy2 = 0;
+
+      state.ax2 = 0;
+      state.ay2 = 0;
+      state.fx2 = 0;
+      state.fy2 = 0;
+
+      state.theta = 0;
+      state.omega = current.initialOmega;
+      state.alpha = 0;
+
+      state.collisionLocked = false;
+
+      if (current.mode === "freefall") {
+        state.x1 = 0;
+        state.y1 = current.freefallHeight;
+        state.vx1 = 0;
+        state.vy1 = -Math.abs(current.speed);
+      }
+
+      if (current.mode === "friction") {
+        state.vy1 = 0;
+      }
+
+      if (current.mode === "collision") {
+        state.x1 = current.position1;
+        state.y1 = 0.7;
+        state.vx1 = current.velocity1;
+        state.vy1 = 0;
+
+        state.x2 = current.position2;
+        state.y2 = 0.7;
+        state.vx2 = current.velocity2;
+        state.vy2 = 0;
+      }
+
+      if (current.mode === "incline") {
+        const beta = current.inclineAngle * Math.PI / 180;
+        const startDistance = 12;
+
+        state.x1 = startDistance * Math.cos(beta);
+        state.y1 = 1 + startDistance * Math.sin(beta) + 0.7;
+        state.vx1 = 0;
+        state.vy1 = 0;
+      }
+
+      if (current.mode === "circular") {
+        state.theta = 0;
+        state.omega = current.angularSpeed;
+        state.x1 = current.circleRadius;
+        state.y1 = 5;
+        state.vx1 = 0;
+        state.vy1 = current.circleRadius * state.omega;
+      }
+
+      if (current.mode === "escape") {
+        state.escapeX = current.planetRadius;
+        state.escapeY = 0;
+
+        /*
+         * 0°는 중심천체 표면에서 바깥쪽인 +x 방향입니다.
+         */
+        state.escapeVx = current.speed * Math.cos(launch);
+        state.escapeVy = current.speed * Math.sin(launch);
+        state.escapeScale = 8 / current.planetRadius;
+
+        state.vx1 = state.escapeVx;
+        state.vy1 = state.escapeVy;
+      }
+
+      state.trail1 = [];
+      state.trail2 = [];
+      state.history = [];
+      state.historyIndex = 0;
+
+      dom.playPause.textContent = "▶ 재생";
+
+      updateModeUI();
+      updatePhysicsInfo();
+      saveHistory(true);
+
+      if (resetCameraToo) {
+        fitCamera();
+      }
+
+      render();
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       물리 계산
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+    function pauseSimulation(message) {
+      state.running = false;
+      dom.playPause.textContent = "▶ 재생";
+
+      if (message) {
+        setMessage(message);
+      }
+    }
+
+    function updateStandard(current, dt) {
+      let fx = current.mass * current.extraAx;
+      let fy = current.mass * current.extraAy;
+
+      if (
+        current.mode === "projectile" ||
+        current.mode === "freefall" ||
+        current.mode === "drag"
+      ) {
+        fy -= current.mass * current.g;
+      }
+
+      if (
+        current.mode === "friction" &&
+        Math.abs(state.vx1) > 0.0001
+      ) {
+        const friction = current.mu * current.mass * current.g;
+        fx -= Math.sign(state.vx1) * friction;
+      }
+
+      if (
+        current.mode === "drag" &&
+        current.rho > 0 &&
+        current.cd > 0
+      ) {
+        const relativeVx = state.vx1 - current.wind;
+        const relativeVy = state.vy1;
+        const relativeSpeed = Math.hypot(relativeVx, relativeVy);
+        const area = Math.PI * 0.35 * 0.35;
+
+        if (relativeSpeed > 0) {
+          const drag =
+            0.5 *
+            current.rho *
+            current.cd *
+            area *
+            relativeSpeed *
+            relativeSpeed;
+
+          fx -= drag * relativeVx / relativeSpeed;
+          fy -= drag * relativeVy / relativeSpeed;
+        }
+      }
+
+      state.fx1 = fx;
+      state.fy1 = fy;
+      state
