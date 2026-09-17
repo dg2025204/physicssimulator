@@ -3,27 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <title>Physics Simulator</title>
 
   <style>
     :root {
       color-scheme: dark;
-
-      --background: #06101d;
-      --surface: #0c1929;
-      --surface-light: #14263d;
-      --surface-hover: #1b4264;
-      --border: #34506f;
-      --primary: #39c7ff;
+      --bg: #06101d;
+      --panel: #0c1929;
+      --panel2: #14263d;
+      --border: #2f4868;
+      --primary: #3bc8ff;
       --text: #f7fbff;
-      --muted: #a2b4c8;
-
-      font-family:
-        Pretendard,
-        "Noto Sans KR",
-        Arial,
-        sans-serif;
+      --muted: #9fb1c5;
+      --yellow: #ffda3d;
     }
 
     * {
@@ -38,220 +30,33 @@
 
     body {
       margin: 0;
-      background:
-        radial-gradient(
-          circle at 75% 0%,
-          #123751,
-          transparent 35%
-        ),
-        var(--background);
-
+      background: var(--bg);
       color: var(--text);
+      font-family:
+        Pretendard,
+        "Noto Sans KR",
+        Arial,
+        sans-serif;
     }
 
-    /*
-     * label 카드가 제어하는 체크박스입니다.
-     * checked 상태이면 선택 창이 표시됩니다.
-     */
-    #modeWindow {
-      position: fixed;
-      width: 1px;
-      height: 1px;
-      opacity: 0;
-      pointer-events: none;
+    button,
+    input,
+    select {
+      font: inherit;
     }
 
-    /*
-     * 운동 선택 창
-     */
-    #modeModal {
-      position: fixed;
-      z-index: 999999;
-      inset: 0;
-
-      padding: 22px;
-      display: grid;
-      place-items: center;
-
-      background:
-        radial-gradient(
-          circle at 50% 10%,
-          rgb(38 126 184 / 40%),
-          transparent 44%
-        ),
-        rgb(2 8 18 / 96%);
-    }
-
-    /*
-     * 체크박스가 해제되면 선택 창을 숨깁니다.
-     * JavaScript를 사용하지 않습니다.
-     */
-    #modeWindow:not(:checked) + #modeModal {
-      display: none;
-    }
-
-    .mode-dialog {
-      width: min(1050px, 96vw);
-      max-height: 92vh;
-
-      padding: clamp(24px, 4vw, 42px);
-      overflow-y: auto;
-
-      border: 1px solid rgb(255 255 255 / 15%);
-      border-radius: 25px;
-
-      background:
-        linear-gradient(
-          145deg,
-          #172f4b,
-          #091a2e 60%,
-          #06111f
-        );
-
-      box-shadow:
-        0 40px 120px rgb(0 0 0 / 65%);
-    }
-
-    .eyebrow {
-      margin: 0;
-
-      color: var(--primary);
-      text-align: center;
-
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 0.15em;
-    }
-
-    .mode-dialog h1 {
-      margin: 9px 0 10px;
-
-      color: var(--text);
-      text-align: center;
-
-      font-size: clamp(1.7rem, 4vw, 2.8rem);
-      letter-spacing: -0.04em;
-    }
-
-    .description {
-      margin: 0 0 29px;
-
-      color: var(--muted);
-      text-align: center;
-      font-size: 0.92rem;
-    }
-
-    .mode-grid {
-      display: grid;
-
-      grid-template-columns:
-        repeat(3, minmax(0, 1fr));
-
-      gap: 14px;
-    }
-
-    /*
-     * 실제 클릭 영역입니다.
-     * label을 누르면 #modeWindow 체크가 해제됩니다.
-     */
-    .mode-card {
-      min-width: 0;
-      min-height: 180px;
-
-      padding: 23px 19px;
-
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-      gap: 11px;
-
-      border: 1px solid var(--border);
-      border-radius: 19px;
-
-      background:
-        linear-gradient(
-          145deg,
-          #102944,
-          #081a2e
-        );
-
-      color: var(--text);
-
+    button {
+      color: inherit;
       cursor: pointer;
-      user-select: none;
-      touch-action: manipulation;
-
-      transition:
-        transform 150ms ease,
-        border-color 150ms ease,
-        background 150ms ease,
-        box-shadow 150ms ease;
     }
 
-    .mode-card:hover {
-      transform: translateY(-6px);
-
-      border-color: var(--primary);
-      background:
-        linear-gradient(
-          145deg,
-          #17476d,
-          #0c2946
-        );
-
-      box-shadow:
-        0 18px 45px rgb(0 0 0 / 35%);
-    }
-
-    .mode-card:active {
-      transform: scale(0.98);
-    }
-
-    .mode-icon {
-      min-width: 58px;
-      height: 58px;
-      padding: 0 9px;
-
-      display: grid;
-      place-items: center;
-
-      border-radius: 16px;
-      background: rgb(57 199 255 / 13%);
-
-      color: var(--primary);
-      font-size: 1.55rem;
-      font-weight: 900;
-
-      pointer-events: none;
-    }
-
-    .mode-card strong,
-    .mode-card small {
-      pointer-events: none;
-    }
-
-    .mode-card strong {
-      font-size: 1.05rem;
-    }
-
-    .mode-card small {
-      color: var(--muted);
-      font-size: 0.77rem;
-    }
-
-    /*
-     * 모달 뒤에 보이는 기본 페이지
-     */
     header {
-      min-height: 72px;
-      padding: 12px 22px;
-
+      min-height: 70px;
+      padding: 12px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 15px;
-
+      gap: 14px;
       border-bottom: 1px solid var(--border);
       background: #081523;
     }
@@ -259,300 +64,1458 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 11px;
+      gap: 10px;
     }
 
     .logo {
-      width: 43px;
-      height: 43px;
-
+      width: 42px;
+      height: 42px;
       display: grid;
       place-items: center;
-
       border-radius: 13px;
-
-      background:
-        linear-gradient(
-          140deg,
-          var(--primary),
-          #5266ff
-        );
-
-      font-size: 1.3rem;
+      background: linear-gradient(140deg, var(--primary), #5366ff);
+      font-size: 1.25rem;
       font-weight: 900;
     }
 
-    .brand h2 {
+    .brand h1 {
       margin: 0;
-      font-size: 1.12rem;
+      font-size: 1.08rem;
     }
 
     .brand p {
       margin: 3px 0 0;
       color: var(--muted);
-      font-size: 0.73rem;
+      font-size: 0.72rem;
     }
 
-    /*
-     * label이므로 JavaScript 없이 창을 다시 엽니다.
-     */
-    .reopen-button {
-      min-height: 40px;
-      padding: 0 14px;
-
-      display: grid;
-      place-items: center;
-
+    .header-button,
+    .tool-button,
+    .action-button {
       border: 1px solid var(--border);
-      border-radius: 10px;
-
-      background: var(--surface-light);
-      color: var(--text);
-
-      cursor: pointer;
-      user-select: none;
+      border-radius: 9px;
+      background: var(--panel2);
     }
 
-    .reopen-button:hover {
+    .header-button {
+      min-height: 38px;
+      padding: 0 13px;
+    }
+
+    button:hover {
       border-color: var(--primary);
-      background: var(--surface-hover);
+      background: #1b3858;
     }
 
-    main {
-      min-height: calc(100vh - 72px);
-      padding: 26px;
-
-      display: grid;
-      place-items: center;
-    }
-
-    .simulator-placeholder {
-      width: min(1100px, 100%);
+    .app {
+      height: calc(100vh - 70px);
       min-height: 650px;
-
-      padding: 26px;
-
       display: grid;
-      place-items: center;
-
-      border: 1px solid var(--border);
-      border-radius: 20px;
-
-      background:
-        radial-gradient(
-          circle at 50% 30%,
-          #102c49,
-          #040b14 65%
-        );
-
-      text-align: center;
+      grid-template-columns: 340px minmax(0, 1fr);
     }
 
-    .simulator-placeholder h2 {
-      margin: 0 0 10px;
-      font-size: 1.5rem;
+    aside {
+      padding: 17px;
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      background: #091625;
     }
 
-    .simulator-placeholder p {
-      max-width: 620px;
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 13px;
+    }
+
+    .panel-title h2 {
       margin: 0;
-
-      color: var(--muted);
-      line-height: 1.7;
+      font-size: 1.2rem;
     }
 
-    .success-badge {
-      margin-bottom: 15px;
-      padding: 8px 12px;
-
-      border: 1px solid rgb(57 199 255 / 30%);
+    #modeBadge {
+      padding: 6px 9px;
+      border: 1px solid rgb(59 200 255 / 30%);
       border-radius: 999px;
+      background: rgb(59 200 255 / 12%);
+      color: #83dfff;
+      font-size: 0.67rem;
+    }
 
-      background: rgb(57 199 255 / 12%);
-      color: #8be2ff;
+    .control-card {
+      margin-bottom: 9px;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+    }
 
-      font-size: 0.75rem;
+    .control-card h3 {
+      margin: 0 0 10px;
+      font-size: 0.82rem;
+    }
+
+    label {
+      margin-top: 9px;
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    input,
+    select {
+      width: 100%;
+      height: 38px;
+      padding: 0 9px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: 0;
+      background: #06121f;
+      color: var(--text);
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+    }
+
+    .input-unit {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #06121f;
+    }
+
+    .input-unit input {
+      min-width: 0;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .input-unit span {
+      padding-right: 8px;
+      color: #748a9f;
+      font-size: 0.61rem;
+      white-space: nowrap;
+    }
+
+    .two-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .check-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .check-label input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
+    }
+
+    .mode-settings {
+      display: none;
+    }
+
+    .mode-settings.active {
+      display: block;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    .action-button {
+      min-height: 41px;
+      font-size: 0.7rem;
       font-weight: 700;
     }
 
+    .primary {
+      border-color: #087fbe;
+      background: linear-gradient(135deg, #087fbe, #176fd0);
+    }
+
+    #message {
+      min-height: 37px;
+      margin: 9px 0 0;
+      padding: 9px;
+      border-radius: 8px;
+      background: rgb(255 255 255 / 4%);
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.67rem;
+      line-height: 1.45;
+    }
+
+    .simulation {
+      position: relative;
+      min-width: 0;
+      min-height: 650px;
+      overflow: hidden;
+      background: #020811;
+    }
+
+    #canvas {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .tools {
+      position: absolute;
+      z-index: 5;
+      top: 15px;
+      left: 50%;
+      padding: 5px;
+      display: flex;
+      gap: 5px;
+      transform: translateX(-50%);
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 11px;
+      background: rgb(7 19 34 / 84%);
+    }
+
+    .tool-button {
+      min-width: 37px;
+      height: 34px;
+      padding: 0 9px;
+    }
+
+    .overlay {
+      position: absolute;
+      z-index: 4;
+      top: 15px;
+      width: 270px;
+      max-height: calc(100% - 80px);
+      padding: 12px;
+      overflow-y: auto;
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 12px;
+      background: rgb(5 14 27 / 80%);
+      backdrop-filter: blur(9px);
+    }
+
+    .formula-card {
+      left: 15px;
+      color: #ffe36c;
+    }
+
+    .info-card {
+      right: 15px;
+    }
+
+    .overlay-title {
+      margin-bottom: 9px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      color: white;
+      font-size: 0.7rem;
+    }
+
+    .overlay-title button {
+      min-height: 27px;
+      padding: 3px 7px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--panel2);
+      color: white;
+      font-size: 0.61rem;
+    }
+
+    #formulaText {
+      margin: 0;
+      white-space: pre-wrap;
+      font: 0.66rem/1.65 Consolas, monospace;
+    }
+
+    .physics-row {
+      padding: 4px 0;
+      display: grid;
+      grid-template-columns: minmax(70px, 1fr) auto;
+      gap: 8px;
+      border-bottom: 1px solid rgb(255 255 255 / 6%);
+      font-size: 0.65rem;
+    }
+
+    .physics-name {
+      color: #a8bacd;
+    }
+
+    .physics-value {
+      color: #71dcff;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* 운동 선택 모달 */
+
+    .modal {
+      position: fixed;
+      z-index: 999999;
+      inset: 0;
+      padding: 20px;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 10%, rgb(33 119 177 / 40%), transparent 45%),
+        rgb(2 8 18 / 96%);
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    .mode-dialog {
+      width: min(980px, 96vw);
+      max-height: 92vh;
+      padding: clamp(24px, 4vw, 42px);
+      overflow-y: auto;
+      border: 1px solid rgb(255 255 255 / 15%);
+      border-radius: 24px;
+      background: linear-gradient(145deg, #172f4b, #091a2e 60%, #06111f);
+    }
+
+    .mode-dialog h2 {
+      margin: 7px 0 8px;
+      text-align: center;
+      font-size: clamp(1.6rem, 4vw, 2.5rem);
+    }
+
+    .mode-dialog > p {
+      margin: 0 0 25px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 13px;
+    }
+
+    .mode-button {
+      min-height: 145px;
+      padding: 20px 17px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 9px;
+      border: 1px solid #354e6f;
+      border-radius: 17px;
+      background: linear-gradient(145deg, #102944, #081a2e);
+      text-align: left;
+    }
+
+    .mode-button:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      background: #164569;
+    }
+
+    .mode-button span {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: rgb(59 200 255 / 13%);
+      color: var(--primary);
+      font-size: 1.4rem;
+    }
+
+    .mode-button small {
+      color: var(--muted);
+    }
+
+    /* 공식 설명 모달 */
+
+    .formula-dialog {
+      width: min(650px, 96vw);
+      max-height: 90vh;
+      padding: 22px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #0b192b;
+    }
+
+    .dialog-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .dialog-heading h2 {
+      margin: 0;
+    }
+
+    .close-button {
+      width: 37px;
+      height: 37px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--panel2);
+    }
+
+    #formulaDescription {
+      margin-top: 16px;
+      color: #d7e3f1;
+      line-height: 1.75;
+    }
+
+    #formulaDescription pre {
+      padding: 12px;
+      border-radius: 9px;
+      background: #06121f;
+      color: #ffe36c;
+      white-space: pre-wrap;
+    }
+
     @media (max-width: 850px) {
-      .mode-dialog {
-        padding: 28px;
+      .app {
+        grid-template-columns: 300px minmax(0, 1fr);
       }
 
-      .mode-grid {
-        grid-template-columns:
-          repeat(2, minmax(0, 1fr));
-      }
-
-      .mode-card {
-        min-height: 155px;
+      .overlay {
+        width: 215px;
       }
     }
 
-    @media (max-width: 520px) {
-      #modeModal {
+    @media (max-width: 700px) {
+      body {
+        overflow: auto;
+      }
+
+      .app {
+        height: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .simulation {
+        order: 1;
+        height: 62vh;
+        min-height: 500px;
+      }
+
+      aside {
+        order: 2;
+        overflow: visible;
+        border-top: 1px solid var(--border);
+        border-right: 0;
+      }
+
+      .overlay {
+        top: auto;
+        bottom: 8px;
+        width: calc(50% - 10px);
+        max-height: 180px;
         padding: 8px;
       }
 
-      .mode-dialog {
-        width: 100%;
-        padding: 22px 12px;
-        border-radius: 18px;
+      .formula-card {
+        left: 5px;
+      }
+
+      .info-card {
+        right: 5px;
       }
 
       .mode-grid {
+        grid-template-columns: 1fr 1fr;
         gap: 8px;
       }
 
-      .mode-card {
-        min-height: 135px;
-        padding: 15px 12px;
-        border-radius: 14px;
-      }
-
-      .mode-card small {
-        display: none;
-      }
-
-      header {
-        padding: 10px 12px;
-      }
-
-      .brand p {
-        display: none;
-      }
-
-      .reopen-button {
-        padding: 0 9px;
-        font-size: 0.7rem;
-      }
-
-      main {
-        padding: 12px;
-      }
-
-      .simulator-placeholder {
-        min-height: 520px;
-        padding: 18px;
+      .mode-button {
+        min-height: 120px;
       }
     }
   </style>
 </head>
 
 <body>
-  <!--
-    checked = 선택 창 열림
-    카드 label 클릭 = 체크 해제 = 선택 창 닫힘
-  -->
-  <input
-    id="modeWindow"
-    type="checkbox"
-    checked
-    aria-hidden="true"
-  >
-
-  <!-- 체크박스 바로 다음에 있어야 합니다. -->
-  <section id="modeModal">
-    <div class="mode-dialog">
-      <p class="eyebrow">INTERACTIVE PHYSICS LAB</p>
-
-      <h1>어떤 운동을 시뮬레이션할까요?</h1>
-
-      <p class="description">
-        큰 버튼을 누르면 선택 창이 닫히고 실험실이 표시됩니다.
-      </p>
+  <div id="modeModal" class="modal">
+    <section class="mode-dialog">
+      <h2>어떤 운동을 시뮬레이션할까요?</h2>
+      <p>운동을 선택하면 초기 설정이 적용됩니다.</p>
 
       <div class="mode-grid">
-        <label class="mode-card" for="modeWindow">
-          <span class="mode-icon">↗</span>
+        <button class="mode-button" type="button" data-mode="projectile">
+          <span>↗</span>
           <strong>포물선 운동</strong>
-          <small>발사 각도와 중력</small>
-        </label>
+          <small>발사 속도, 각도, 중력</small>
+        </button>
 
-        <label class="mode-card" for="modeWindow">
-          <span class="mode-icon">↓</span>
+        <button class="mode-button" type="button" data-mode="freefall">
+          <span>↓</span>
           <strong>자유 낙하</strong>
-          <small>높이와 중력가속도</small>
-        </label>
+          <small>시작 높이와 중력가속도</small>
+        </button>
 
-        <label class="mode-card" for="modeWindow">
-          <span class="mode-icon">▰</span>
+        <button class="mode-button" type="button" data-mode="friction">
+          <span>▰</span>
           <strong>마찰 운동</strong>
-          <small>수평면에서의 감속</small>
-        </label>
+          <small>수평면 마찰에 의한 감속</small>
+        </button>
 
-        <label class="mode-card" for="modeWindow">
-          <span class="mode-icon">≋</span>
-          <strong>공기저항</strong>
-          <small>이차 항력과 바람</small>
-        </label>
-
-        <label class="mode-card" for="modeWindow">
-          <span class="mode-icon">● ●</span>
-          <strong>충돌</strong>
-          <small>두 물체의 질량과 속도</small>
-        </label>
-
-        <label class="mode-card" for="modeWindow">
-          <span class="mode-icon">◢</span>
-          <strong>빗면 운동</strong>
-          <small>빗면 중력 성분과 마찰</small>
-        </label>
-
-        <label class="mode-card" for="modeWindow">
-          <span class="mode-icon">↻</span>
+        <button class="mode-button" type="button" data-mode="circular">
+          <span>↻</span>
           <strong>원운동</strong>
-          <small>각속도와 구심가속도</small>
-        </label>
-
-        <label class="mode-card" for="modeWindow">
-          <span class="mode-icon">⟲</span>
-          <strong>돌림힘</strong>
-          <small>τ = Iα 회전 운동</small>
-        </label>
-
-        <label class="mode-card" for="modeWindow">
-          <span class="mode-icon">🚀</span>
-          <strong>탈출 속도</strong>
-          <small>중심천체의 역제곱 중력</small>
-        </label>
+          <small>반지름과 각속도</small>
+        </button>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
+
+  <div id="formulaModal" class="modal hidden">
+    <section class="formula-dialog">
+      <div class="dialog-heading">
+        <h2 id="formulaTitle">공식 설명</h2>
+        <button id="closeFormula" class="close-button" type="button">×</button>
+      </div>
+
+      <div id="formulaDescription"></div>
+    </section>
+  </div>
 
   <header>
     <div class="brand">
       <div class="logo">P</div>
-
       <div>
-        <h2>Physics Simulator</h2>
-        <p>당곡고 인터랙티브 물리 실험실</p>
+        <h1>Physics Simulator</h1>
+        <p>인터랙티브 물리 실험실</p>
       </div>
     </div>
 
-    <!-- JavaScript 없이 선택 창 다시 열기 -->
-    <label class="reopen-button" for="modeWindow">
+    <button id="openMode" class="header-button" type="button">
       운동 다시 선택
-    </label>
+    </button>
   </header>
 
-  <main>
-    <section class="simulator-placeholder">
-      <div>
-        <div class="success-badge">
-          MODE SELECTOR READY
+  <main class="app">
+    <aside>
+      <div class="panel-title">
+        <h2>실험 설정</h2>
+        <span id="modeBadge">포물선 운동</span>
+      </div>
+
+      <section class="control-card">
+        <h3>운동과 환경</h3>
+
+        <label>
+          운동 종류
+          <select id="mode">
+            <option value="projectile">포물선 운동</option>
+            <option value="freefall">자유 낙하</option>
+            <option value="friction">마찰 운동</option>
+            <option value="circular">원운동</option>
+          </select>
+        </label>
+
+        <label>
+          중력 환경
+          <select id="gravity">
+            <option value="9.8">지구 · 9.8 m·s⁻²</option>
+            <option value="1.62">달 · 1.62 m·s⁻²</option>
+            <option value="3.72">화성 · 3.72 m·s⁻²</option>
+            <option value="0">무중력 · 0 m·s⁻²</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="control-card">
+        <h3>초기 조건</h3>
+
+        <div class="two-columns">
+          <label>
+            초기 속력 v₀
+            <div class="input-unit">
+              <input id="speed" type="number" value="15" step="0.1">
+              <span>m·s⁻¹</span>
+            </div>
+          </label>
+
+          <label>
+            질량 m
+            <div class="input-unit">
+              <input id="mass" type="number" value="1" min="0.01" step="0.1">
+              <span>kg</span>
+            </div>
+          </label>
         </div>
 
-        <h2>운동 선택 버튼이 정상 작동했습니다.</h2>
+        <label>
+          발사 각도 θ
+          <div class="input-unit">
+            <input id="angle" type="number" value="60" step="1">
+            <span>°</span>
+          </div>
+        </label>
 
-        <p>
-          이 화면이 보인다면 시작 창의 클릭 기능과 GitHub Pages 배포는
-          정상입니다. 오른쪽 위의 “운동 다시 선택”을 누르면 선택 창을
-          다시 열 수 있습니다.
+        <div class="two-columns">
+          <label>
+            추가 가속도 aₓ
+            <div class="input-unit">
+              <input id="accelerationX" type="number" value="0" step="0.1">
+              <span>m·s⁻²</span>
+            </div>
+          </label>
+
+          <label>
+            추가 가속도 aᵧ
+            <div class="input-unit">
+              <input id="accelerationY" type="number" value="0" step="0.1">
+              <span>m·s⁻²</span>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <section class="control-card">
+        <h3>모드별 설정</h3>
+
+        <div id="freefallSettings" class="mode-settings">
+          <label>
+            시작 높이 h₀
+            <div class="input-unit">
+              <input id="freefallHeight" type="number" value="25" min="1" step="1">
+              <span>m</span>
+            </div>
+          </label>
+        </div>
+
+        <div id="frictionSettings" class="mode-settings">
+          <label>
+            운동마찰계수 μₖ
+            <input id="frictionCoefficient" type="number" value="0.3" min="0" step="0.01">
+          </label>
+        </div>
+
+        <div id="circularSettings" class="mode-settings">
+          <label>
+            반지름 r
+            <div class="input-unit">
+              <input id="radius" type="number" value="10" min="1" step="0.5">
+              <span>m</span>
+            </div>
+          </label>
+
+          <label>
+            각속도 ω
+            <div class="input-unit">
+              <input id="angularVelocity" type="number" value="1" step="0.1">
+              <span>rad·s⁻¹</span>
+            </div>
+          </label>
+        </div>
+
+        <p id="noExtraSettings" style="color:var(--muted);font-size:.72rem;">
+          추가 설정이 필요하지 않습니다.
         </p>
+      </section>
+
+      <section class="control-card">
+        <h3>표시 설정</h3>
+
+        <label class="check-label">
+          <input id="showTrail" type="checkbox" checked>
+          운동 경로 표시
+        </label>
+      </section>
+
+      <div class="actions">
+        <button id="start" class="action-button primary" type="button">
+          ▶ 처음부터
+        </button>
+
+        <button id="playPause" class="action-button" type="button">
+          ▶ 재생
+        </button>
+
+        <button id="reset" class="action-button" type="button">
+          ↻ 초기화
+        </button>
+      </div>
+
+      <p id="message">운동을 선택하고 실행해 주세요.</p>
+    </aside>
+
+    <section id="simulation" class="simulation">
+      <canvas id="canvas"></canvas>
+
+      <div class="tools">
+        <button id="zoomIn" class="tool-button" type="button">＋</button>
+        <button id="zoomOut" class="tool-button" type="button">−</button>
+        <button id="fitView" class="tool-button" type="button">화면 맞춤</button>
+      </div>
+
+      <div class="overlay formula-card">
+        <div class="overlay-title">
+          <strong>적용 공식</strong>
+          <button id="showFormula" type="button">공식 설명</button>
+        </div>
+        <pre id="formulaText"></pre>
+      </div>
+
+      <div class="overlay info-card">
+        <div class="overlay-title">
+          <strong>실시간 물리량</strong>
+        </div>
+        <div id="physicsInfo"></div>
       </div>
     </section>
   </main>
+
+  <script>
+    "use strict";
+
+    const MODES = {
+      projectile: {
+        name: "포물선 운동",
+        speed: 15,
+        angle: 60,
+        formula:
+`x = x₀ + v₀cosθ·t
+y = y₀ + v₀sinθ·t − ½gt²
+F⃗g = m g⃗`,
+        explanation:
+          "수평 방향에는 사용자가 추가한 가속도 aₓ가 작용하고, " +
+          "수직 방향에는 중력가속도 −g와 추가 가속도 aᵧ가 작용합니다."
+      },
+
+      freefall: {
+        name: "자유 낙하",
+        speed: 0,
+        angle: 270,
+        formula:
+`vᵧ = v₀ᵧ − gt
+y = y₀ + v₀ᵧt − ½gt²`,
+        explanation:
+          "물체가 중력의 영향으로 수직 낙하합니다. 공기저항을 무시하면 " +
+          "질량과 관계없이 같은 중력가속도를 갖습니다."
+      },
+
+      friction: {
+        name: "마찰 운동",
+        speed: 15,
+        angle: 0,
+        formula:
+`fₖ = μₖN = μₖmg
+aₓ = −μₖg·sgn(vₓ)`,
+        explanation:
+          "운동마찰력은 수직항력 N에 비례하며 물체의 운동 방향과 반대로 작용합니다."
+      },
+
+      circular: {
+        name: "원운동",
+        speed: 10,
+        angle: 0,
+        formula:
+`v = rω
+a꜀ = rω² = v²/r
+F꜀ = mrω²`,
+        explanation:
+          "속력은 일정하지만 속도 방향이 계속 변하므로 원의 중심을 향하는 " +
+          "구심가속도와 구심력이 존재합니다."
+      }
+    };
+
+    const get = (id) => document.getElementById(id);
+
+    const modeModal = get("modeModal");
+    const formulaModal = get("formulaModal");
+
+    const modeSelect = get("mode");
+    const modeBadge = get("modeBadge");
+
+    const speedInput = get("speed");
+    const massInput = get("mass");
+    const angleInput = get("angle");
+    const accelerationXInput = get("accelerationX");
+    const accelerationYInput = get("accelerationY");
+    const gravitySelect = get("gravity");
+
+    const freefallHeightInput = get("freefallHeight");
+    const frictionInput = get("frictionCoefficient");
+    const radiusInput = get("radius");
+    const angularVelocityInput = get("angularVelocity");
+
+    const showTrailInput = get("showTrail");
+
+    const startButton = get("start");
+    const playPauseButton = get("playPause");
+    const resetButton = get("reset");
+
+    const message = get("message");
+    const formulaText = get("formulaText");
+    const physicsInfo = get("physicsInfo");
+
+    const simulation = get("simulation");
+    const canvas = get("canvas");
+    const context = canvas.getContext("2d");
+
+    let running = false;
+    let elapsed = 0;
+    let x = 0;
+    let y = 0;
+    let velocityX = 0;
+    let velocityY = 0;
+    let accelerationX = 0;
+    let accelerationY = 0;
+    let circularAngle = 0;
+    let trail = [];
+    let zoom = 1;
+    let previousTime = performance.now();
+
+    function numberValue(input, fallback = 0) {
+      const value = Number(input.value);
+      return Number.isFinite(value) ? value : fallback;
+    }
+
+    function currentMode() {
+      return MODES[modeSelect.value];
+    }
+
+    function updateModeInterface() {
+      const mode = modeSelect.value;
+      const data = currentMode();
+
+      modeBadge.textContent = data.name;
+      formulaText.textContent = data.formula;
+
+      get("freefallSettings").classList.toggle(
+        "active",
+        mode === "freefall"
+      );
+
+      get("frictionSettings").classList.toggle(
+        "active",
+        mode === "friction"
+      );
+
+      get("circularSettings").classList.toggle(
+        "active",
+        mode === "circular"
+      );
+
+      get("noExtraSettings").style.display =
+        mode === "projectile" ? "block" : "none";
+    }
+
+    function selectMode(mode) {
+      if (!MODES[mode]) {
+        return;
+      }
+
+      modeSelect.value = mode;
+      speedInput.value = MODES[mode].speed;
+      angleInput.value = MODES[mode].angle;
+
+      updateModeInterface();
+      resetSimulation(true);
+
+      modeModal.classList.add("hidden");
+      message.textContent = `${MODES[mode].name} 모드가 선택되었습니다.`;
+    }
+
+    function resizeCanvas() {
+      const rectangle = simulation.getBoundingClientRect();
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+
+      canvas.width = Math.max(
+        1,
+        Math.round(rectangle.width * ratio)
+      );
+
+      canvas.height = Math.max(
+        1,
+        Math.round(rectangle.height * ratio)
+      );
+
+      canvas.style.width = `${rectangle.width}px`;
+      canvas.style.height = `${rectangle.height}px`;
+
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+
+    function resetSimulation(resetZoom = false) {
+      running = false;
+      elapsed = 0;
+      trail = [];
+
+      const mode = modeSelect.value;
+      const speed = numberValue(speedInput);
+      const angle =
+        numberValue(angleInput) *
+        Math.PI / 180;
+
+      x = -20;
+      y = 1;
+
+      velocityX = speed * Math.cos(angle);
+      velocityY = speed * Math.sin(angle);
+
+      accelerationX = numberValue(accelerationXInput);
+      accelerationY =
+        numberValue(accelerationYInput) -
+        numberValue(gravitySelect, 9.8);
+
+      if (mode === "freefall") {
+        x = 0;
+        y = numberValue(freefallHeightInput, 25);
+        velocityX = 0;
+        velocityY = -Math.abs(speed);
+      }
+
+      if (mode === "friction") {
+        x = -20;
+        y = 1;
+        velocityY = 0;
+        accelerationY = 0;
+      }
+
+      if (mode === "circular") {
+        const radius = Math.max(
+          numberValue(radiusInput, 10),
+          1
+        );
+
+        circularAngle = 0;
+        x = radius;
+        y = 8;
+      }
+
+      if (resetZoom) {
+        zoom = 1;
+      }
+
+      playPauseButton.textContent = "▶ 재생";
+
+      updatePhysicsInfo();
+      draw();
+    }
+
+    function update(deltaTime) {
+      const mode = modeSelect.value;
+      const mass = Math.max(numberValue(massInput, 1), 0.01);
+      const gravity = numberValue(gravitySelect, 9.8);
+
+      if (mode === "circular") {
+        const radius = Math.max(
+          numberValue(radiusInput, 10),
+          1
+        );
+
+        const omega =
+          numberValue(angularVelocityInput, 1);
+
+        circularAngle += omega * deltaTime;
+
+        x = radius * Math.cos(circularAngle);
+        y = 8 + radius * Math.sin(circularAngle);
+
+        velocityX =
+          -radius *
+          omega *
+          Math.sin(circularAngle);
+
+        velocityY =
+          radius *
+          omega *
+          Math.cos(circularAngle);
+
+        accelerationX =
+          -radius *
+          omega *
+          omega *
+          Math.cos(circularAngle);
+
+        accelerationY =
+          -radius *
+          omega *
+          omega *
+          Math.sin(circularAngle);
+      } else {
+        accelerationX =
+          numberValue(accelerationXInput);
+
+        accelerationY =
+          numberValue(accelerationYInput);
+
+        if (
+          mode === "projectile" ||
+          mode === "freefall"
+        ) {
+          accelerationY -= gravity;
+        }
+
+        if (mode === "friction") {
+          const coefficient = Math.max(
+            numberValue(frictionInput, 0.3),
+            0
+          );
+
+          if (Math.abs(velocityX) > 0.001) {
+            accelerationX -=
+              Math.sign(velocityX) *
+              coefficient *
+              gravity;
+          }
+
+          accelerationY = 0;
+        }
+
+        const oldVelocityX = velocityX;
+
+        velocityX += accelerationX * deltaTime;
+        velocityY += accelerationY * deltaTime;
+
+        if (
+          mode === "friction" &&
+          oldVelocityX !== 0 &&
+          Math.sign(oldVelocityX) !==
+            Math.sign(velocityX)
+        ) {
+          velocityX = 0;
+        }
+
+        x += velocityX * deltaTime;
+        y += velocityY * deltaTime;
+
+        if (y < 1) {
+          y = 1;
+
+          if (mode === "projectile") {
+            velocityY *= -0.5;
+
+            if (Math.abs(velocityY) < 0.08) {
+              velocityY = 0;
+            }
+          } else {
+            velocityY = 0;
+            running = false;
+            playPauseButton.textContent = "▶ 재생";
+            message.textContent =
+              "물체가 바닥에 도달해 일시정지했습니다.";
+          }
+        }
+
+        if (
+          mode === "friction" &&
+          Math.abs(velocityX) < 0.001
+        ) {
+          velocityX = 0;
+          running = false;
+          playPauseButton.textContent = "▶ 재생";
+          message.textContent =
+            "마찰력으로 물체가 정지했습니다.";
+        }
+      }
+
+      elapsed += deltaTime;
+
+      if (showTrailInput.checked) {
+        trail.push({ x, y });
+
+        if (trail.length > 1500) {
+          trail.shift();
+        }
+      }
+
+      updatePhysicsInfo();
+
+      const screenPoint = worldToScreen(x, y);
+
+      if (
+        screenPoint.x < -60 ||
+        screenPoint.x > simulation.clientWidth + 60 ||
+        screenPoint.y < -60 ||
+        screenPoint.y > simulation.clientHeight + 60
+      ) {
+        running = false;
+        playPauseButton.textContent = "▶ 재생";
+        message.textContent =
+          "물체가 화면 밖으로 이동해 일시정지했습니다. 화면을 축소하세요.";
+      }
+    }
+
+    function worldToScreen(worldX, worldY) {
+      const scale =
+        Math.max(
+          5,
+          simulation.clientWidth / 80
+        ) *
+        zoom;
+
+      return {
+        x:
+          simulation.clientWidth / 2 +
+          worldX * scale,
+
+        y:
+          simulation.clientHeight * 0.75 -
+          worldY * scale
+      };
+    }
+
+    function drawBall(screenX, screenY) {
+      context.beginPath();
+      context.arc(
+        screenX,
+        screenY,
+        Math.max(8, 10 * zoom),
+        0,
+        Math.PI * 2
+      );
+
+      context.fillStyle = "#ffda3d";
+      context.fill();
+
+      context.strokeStyle = "#ffffff";
+      context.lineWidth = 2;
+      context.stroke();
+    }
+
+    function draw() {
+      const width = simulation.clientWidth;
+      const height = simulation.clientHeight;
+      const mode = modeSelect.value;
+
+      context.clearRect(0, 0, width, height);
+
+      const background =
+        context.createLinearGradient(
+          0,
+          0,
+          0,
+          height
+        );
+
+      background.addColorStop(0, "#0a1d35");
+      background.addColorStop(1, "#020811");
+
+      context.fillStyle = background;
+      context.fillRect(0, 0, width, height);
+
+      if (mode !== "circular") {
+        const ground = worldToScreen(0, 0);
+
+        context.fillStyle = "#5e6873";
+        context.fillRect(
+          0,
+          ground.y,
+          width,
+          height - ground.y
+        );
+      }
+
+      if (mode === "circular") {
+        const radius = Math.max(
+          numberValue(radiusInput, 10),
+          1
+        );
+
+        const center = worldToScreen(0, 8);
+        const circleRadius =
+          radius *
+          Math.max(5, width / 80) *
+          zoom;
+
+        context.beginPath();
+        context.arc(
+          center.x,
+          center.y,
+          circleRadius,
+          0,
+          Math.PI * 2
+        );
+
+        context.strokeStyle =
+          "rgba(79,156,214,0.8)";
+
+        context.lineWidth = 2;
+        context.stroke();
+      }
+
+      if (
+        showTrailInput.checked &&
+        trail.length > 1
+      ) {
+        context.beginPath();
+
+        trail.forEach((point, index) => {
+          const screen =
+            worldToScreen(
+              point.x,
+              point.y
+            );
+
+          if (index === 0) {
+            context.moveTo(
+              screen.x,
+              screen.y
+            );
+          } else {
+            context.lineTo(
+              screen.x,
+              screen.y
+            );
+          }
+        });
+
+        context.strokeStyle = "#ff9f25";
+        context.lineWidth = 2;
+        context.stroke();
+      }
+
+      const point = worldToScreen(x, y);
+      drawBall(point.x, point.y);
+    }
+
+    function row(name, value) {
+      return `
+        <div class="physics-row">
+          <span class="physics-name">${name}</span>
+          <span class="physics-value">${value}</span>
+        </div>
+      `;
+    }
+
+    function updatePhysicsInfo() {
+      const mass = Math.max(
+        numberValue(massInput, 1),
+        0.01
+      );
+
+      const speed =
+        Math.hypot(
+          velocityX,
+          velocityY
+        );
+
+      const forceX =
+        mass * accelerationX;
+
+      const forceY =
+        mass * accelerationY;
+
+      const kineticEnergy =
+        0.5 *
+        mass *
+        speed *
+        speed;
+
+      const gravity =
+        numberValue(gravitySelect, 9.8);
+
+      const potentialEnergy =
+        mass *
+        gravity *
+        Math.max(y - 1, 0);
+
+      physicsInfo.innerHTML =
+        row("시간 t", `${elapsed.toFixed(2)} s`) +
+        row(
+          "위치 r⃗",
+          `(${x.toFixed(2)}, ${y.toFixed(2)}) m`
+        ) +
+        row(
+          "속도 v⃗",
+          `(${velocityX.toFixed(2)}, ${velocityY.toFixed(2)}) m·s⁻¹`
+        ) +
+        row(
+          "가속도 a⃗",
+          `(${accelerationX.toFixed(2)}, ${accelerationY.toFixed(2)}) m·s⁻²`
+        ) +
+        row(
+          "알짜힘 F⃗",
+          `(${forceX.toFixed(2)}, ${forceY.toFixed(2)}) N`
+        ) +
+        row(
+          "운동에너지 K",
+          `${kineticEnergy.toFixed(2)} J`
+        ) +
+        row(
+          "위치에너지 U",
+          `${potentialEnergy.toFixed(2)} J`
+        );
+    }
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+
+      const deltaTime = Math.min(
+        (now - previousTime) / 1000,
+        0.03
+      );
+
+      previousTime = now;
+
+      if (running) {
+        update(deltaTime);
+      }
+
+      draw();
+    }
+
+    document
+      .querySelectorAll("[data-mode]")
+      .forEach((button) => {
+        button.addEventListener(
+          "click",
+          () => {
+            selectMode(
+              button.dataset.mode
+            );
+          }
+        );
+      });
+
+    modeSelect.addEventListener(
+      "change",
+      () => {
+        updateModeInterface();
+        resetSimulation(true);
+      }
+    );
+
+    get("openMode").addEventListener(
+      "click",
+      () => {
+        running = false;
+        modeModal.classList.remove("hidden");
+      }
+    );
+
+    startButton.addEventListener(
+      "click",
+      () => {
+        resetSimulation();
+        running = true;
+        playPauseButton.textContent =
+          "Ⅱ 일시정지";
+
+        message.textContent =
+          `${currentMode().name} 실행 중`;
+      }
+    );
+
+    playPauseButton.addEventListener(
+      "click",
+      () => {
+        running = !running;
+
+        playPauseButton.textContent =
+          running
+            ? "Ⅱ 일시정지"
+            : "▶ 재생";
+
+        message.textContent =
+          running
+            ? "시뮬레이션 실행 중"
+            : "일시정지되었습니다.";
+      }
+    );
+
+    resetButton.addEventListener(
+      "click",
+      () => {
+        resetSimulation();
+        message.textContent =
+          "초기화되었습니다.";
+      }
+    );
+
+    get("zoomIn").addEventListener(
+      "click",
+      () => {
+        zoom = Math.min(zoom * 1.25, 6);
+      }
+    );
+
+    get("zoomOut").addEventListener(
+      "click",
+      () => {
+        zoom = Math.max(zoom / 1.25, 0.2);
+      }
+    );
+
+    get("fitView").addEventListener(
+      "click",
+      () => {
+        zoom = 1;
+      }
+    );
+
+    simulation.addEventListener(
+      "wheel",
+      (event) => {
+        event.preventDefault();
+
+        if (event.deltaY < 0) {
+          zoom = Math.min(zoom * 1.1, 6);
+        } else {
+          zoom = Math.max(zoom / 1.1, 0.2);
+        }
+      },
+      { passive: false }
+    );
+
+    get("showFormula").addEventListener(
+      "click",
+      () => {
+        const data = currentMode();
+
+        get("formulaTitle").textContent =
+          data.name;
+
+        get("formulaDescription").innerHTML =
+          `<h3>핵심 공식</h3>` +
+          `<pre>${data.formula}</pre>` +
+          `<h3>설명</h3>` +
+          `<p>${data.explanation}</p>`;
+
+        formulaModal.classList.remove("hidden");
+      }
+    );
+
+    get("closeFormula").addEventListener(
+      "click",
+      () => {
+        formulaModal.classList.add("hidden");
+      }
+    );
+
+    window.addEventListener(
+      "resize",
+      () => {
+        resizeCanvas();
+        draw();
+      }
+    );
+
+    resizeCanvas();
+    updateModeInterface();
+    resetSimulation(true);
+    requestAnimationFrame(animate);
+  </script>
 </body>
 </html>
