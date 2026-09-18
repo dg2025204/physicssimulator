@@ -631,6 +631,49 @@
     }
   </style>
 
+
+<script>
+/* v1.4.1.1: keep escape-velocity initial speed controls synchronized with the simulation */
+(function () {
+  function syncEscapeInitialSpeed() {
+    const selectors = [
+      '#escapeInitialSpeed', '#initialSpeed', '#escape-speed',
+      '[name="escapeInitialSpeed"]', '[name="initialSpeed"]'
+    ];
+    let el = null;
+    for (const s of selectors) {
+      el = document.querySelector(s);
+      if (el) break;
+    }
+    if (!el) return;
+
+    const value = Number(el.value);
+    if (!Number.isFinite(value)) return;
+
+    // Update common global/state variable names used by the simulator.
+    if (typeof window.initialSpeed !== 'undefined') window.initialSpeed = value;
+    if (typeof window.escapeInitialSpeed !== 'undefined') window.escapeInitialSpeed = value;
+    if (typeof window.v0 !== 'undefined') window.v0 = value;
+    if (typeof window.initialVelocity !== 'undefined') window.initialVelocity = value;
+
+    // Update matching output labels.
+    document.querySelectorAll(
+      '#escapeInitialSpeedValue, #initialSpeedValue, [data-for="escapeInitialSpeed"], [data-for="initialSpeed"]'
+    ).forEach(out => out.textContent = value);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll(
+      '#escapeInitialSpeed, #initialSpeed, #escape-speed, [name="escapeInitialSpeed"], [name="initialSpeed"]'
+    ).forEach(el => {
+      el.addEventListener('input', syncEscapeInitialSpeed);
+      el.addEventListener('change', syncEscapeInitialSpeed);
+    });
+    syncEscapeInitialSpeed();
+  });
+})();
+</script>
+
 </head>
 
 <body>
@@ -639,7 +682,7 @@
 
   <div id="modeModal" class="modal">
     <section class="mode-dialog">
-      <span class="version-badge">v1.4</span>
+      <span class="version-badge">v1.4.1</span>
 
 
   <h2>어떤 운동을 시뮬레이션할까요?</h2>
@@ -708,7 +751,7 @@
       <div class="logo">P</div>
       <div>
         <h1>Physics Simulator</h1>
-        <p>인터랙티브 물리 실험실 · v1.4</p>
+        <p>인터랙티브 물리 실험실 · v1.4.1</p>
       </div>
     </div>
 
