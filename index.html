@@ -296,6 +296,15 @@
       padding: 0 9px;
     }
 
+    .tools input[type="range"] {
+      width: 110px;
+      height: 34px;
+      padding: 0;
+      accent-color: var(--primary);
+      background: transparent;
+      border: 0;
+    }
+
     .overlay {
       position: absolute;
       z-index: 4;
@@ -566,7 +575,7 @@
 <body>
   <div id="modeModal" class="modal">
     <section class="mode-dialog">
-      <span class="version-badge">v1.2</span>
+      <span class="version-badge">v1.1</span>
 
       <h2>어떤 운동을 시뮬레이션할까요?</h2>
       <p>운동을 선택하면 초기 설정이 적용됩니다.</p>
@@ -782,7 +791,7 @@
           <label>
             천체 반지름 R
             <div class="input-unit">
-              <input id="planetRadius" type="number" value="12" min="1" step="0.5">
+              <input id="planetRadius" type="number" value="35" min="1" step="0.5">
               <span>m</span>
             </div>
           </label>
@@ -790,6 +799,14 @@
           <label class="check-label">
             <input id="useEscapeSpeed" type="checkbox" checked>
             계산된 탈출 속도로 발사
+          </label>
+
+          <label>
+            시점
+            <select id="escapeView">
+              <option value="planet">행성 고정 (물체가 움직입니다)</option>
+              <option value="object">물체 고정 (행성이 움직입니다)</option>
+            </select>
           </label>
         </div>
 
@@ -828,8 +845,9 @@
       <canvas id="canvas"></canvas>
 
       <div class="tools">
-        <button id="zoomIn" class="tool-button" type="button">＋</button>
         <button id="zoomOut" class="tool-button" type="button">−</button>
+        <input id="zoomSlider" type="range" min="0" max="100" value="50" step="0.1">
+        <button id="zoomIn" class="tool-button" type="button">＋</button>
         <button id="fitView" class="tool-button" type="button">화면 맞춤</button>
       </div>
 
@@ -959,6 +977,8 @@ a(r) = −g₀(R/r)²`,
     const planetGravityInput = get("planetGravity");
     const planetRadiusInput = get("planetRadius");
     const useEscapeSpeedInput = get("useEscapeSpeed");
+    const escapeViewSelect = get("escapeView");
+    const zoomSlider = get("zoomSlider");
 
     const showTrailInput = get("showTrail");
 
@@ -985,7 +1005,12 @@ a(r) = −g₀(R/r)²`,
     let circularAngle = 0;
     let trail = [];
     let zoom = 1;
+    let cameraX = 0;
+    let cameraY = 0;
     let previousTime = performance.now();
+
+    const MIN_ZOOM = 0.02;
+    const MAX_ZOOM = 50;
 
     let inclineDistance = 0;
     let inclineVelocity = 0;
@@ -1047,8 +1072,41 @@ a(r) = −g₀(R/r)²`,
 
     function computeEscapeSpeed() {
       const surfaceGravity = Math.max(numberValue(planetGravityInput, 9.8), 0.0001);
-      const planetRadius = Math.max(numberValue(planetRadiusInput, 12), 1);
+      const planetRadius = Math.max(numberValue(planetRadiusInput, 35), 1);
       return Math.sqrt(2 * surfaceGravity * planetRadius);
+    }
+
+    function autoFitEscapeZoom() {
+      const planetRadius = Math.max(numberValue(planetRadiusInput, 35), 1);
+      const baseScale = Math.max(5, simulation.clientWidth / 80);
+      const desiredScreenRadius =
+        Math.min(simulation.clientWidth, simulation.clientHeight) * 0.32;
+
+      return Math.min(
+        Math.max(desiredScreenRadius / (planetRadius * baseScale), MIN_ZOOM),
+        MAX_ZOOM
+      );
+    }
+
+    function setZoom(nextZoom) {
+      zoom = Math.min(Math.max(nextZoom, MIN_ZOOM), MAX_ZOOM);
+
+      const t =
+        Math.log(zoom / MIN_ZOOM) / Math.log(MAX_ZOOM / MIN_ZOOM);
+
+      zoomSlider.value = (Math.min(Math.max(t, 0), 1) * 100).toFixed(1);
+    }
+
+    function updateCamera() {
+      const mode = modeSelect.value;
+
+      if (mode === "escape" && escapeViewSelect.value === "object") {
+        cameraX = x;
+        cameraY = y;
+      } else {
+        cameraX = 0;
+        cameraY = 0;
+      }
     }
 
     function resetSimulation(resetZoom = false) {
@@ -1098,7 +1156,7 @@ a(r) = −g₀(R/r)²`,
       }
 
       if (mode === "escape") {
-        const planetRadius = Math.max(numberValue(planetRadiusInput, 12), 1);
+        const planetRadius = Math.max(numberValue(planetRadiusInput, 35), 1);
 
         x = 0;
         y = planetRadius;
@@ -1109,12 +1167,15 @@ a(r) = −g₀(R/r)²`,
           speedInput.value = escapeSpeed.toFixed(2);
         }
 
-        velocityX = 0;
-        velocityY = numberValue(speedInput, escapeSpeed);
+        const currentSpeed = numberValue(speedInput, escapeSpeed);
+        const launchAngle = (numberValue(angleInput, 90) * Math.PI) / 180;
+
+        velocityX = currentSpeed * Math.cos(launchAngle);
+        velocityY = currentSpeed * Math.sin(launchAngle);
       }
 
       if (resetZoom) {
-        zoom = 1;
+        setZoom(mode === "escape" ? autoFitEscapeZoom() : 1);
       }
 
       playPauseButton.textContent = "▶ 재생";
@@ -1191,16 +1252,16 @@ a(r) = −g₀(R/r)²`,
 
       } else if (mode === "escape") {
         const surfaceGravity = Math.max(numberValue(planetGravityInput, 9.8), 0.0001);
-        const planetRadius = Math.max(numberValue(planetRadiusInput, 12), 1);
+        const planetRadius = Math.max(numberValue(planetRadiusInput, 35), 1);
 
-        const distanceFromCenter = Math.max(y, 0.01);
+        const distanceFromCenter = Math.max(Math.hypot(x, y), 0.01);
 
         const gravitationalAcceleration =
-          surfaceGravity * (planetRadius * planetRadius) /
+          (surfaceGravity * planetRadius * planetRadius) /
           (distanceFromCenter * distanceFromCenter);
 
-        accelerationX = 0;
-        accelerationY = -gravitationalAcceleration;
+        accelerationX = -gravitationalAcceleration * (x / distanceFromCenter);
+        accelerationY = -gravitationalAcceleration * (y / distanceFromCenter);
 
         velocityX += accelerationX * deltaTime;
         velocityY += accelerationY * deltaTime;
@@ -1208,12 +1269,20 @@ a(r) = −g₀(R/r)²`,
         x += velocityX * deltaTime;
         y += velocityY * deltaTime;
 
-        if (y < planetRadius) {
-          y = planetRadius;
+        const newDistance = Math.max(Math.hypot(x, y), 0.0001);
+
+        if (newDistance < planetRadius) {
+          const pushOut = planetRadius / newDistance;
+
+          x *= pushOut;
+          y *= pushOut;
+
+          velocityX = 0;
           velocityY = 0;
+
           running = false;
           playPauseButton.textContent = "▶ 재생";
-          message.textContent = "물체가 천체 표면으로 다시 떨어졌습니다.";
+          message.textContent = "물체가 행성 표면에 충돌했습니다.";
         }
 
       } else {
@@ -1287,32 +1356,38 @@ a(r) = −g₀(R/r)²`,
 
       updatePhysicsInfo();
 
-      const screenPoint = worldToScreen(x, y);
+      const cameraFollowsObject =
+        mode === "escape" && escapeViewSelect.value === "object";
 
-      if (
-        screenPoint.x < -60 ||
-        screenPoint.x > simulation.clientWidth + 60 ||
-        screenPoint.y < -60 ||
-        screenPoint.y > simulation.clientHeight + 60
-      ) {
-        running = false;
-        playPauseButton.textContent = "▶ 재생";
-        message.textContent = "물체가 화면 밖으로 이동해 일시정지했습니다. 화면을 축소하세요.";
+      if (!cameraFollowsObject) {
+        const screenPoint = worldToScreen(x, y);
+
+        if (
+          screenPoint.x < -60 ||
+          screenPoint.x > simulation.clientWidth + 60 ||
+          screenPoint.y < -60 ||
+          screenPoint.y > simulation.clientHeight + 60
+        ) {
+          running = false;
+          playPauseButton.textContent = "▶ 재생";
+          message.textContent = "물체가 화면 밖으로 이동해 일시정지했습니다. 화면을 축소하세요.";
+        }
       }
     }
 
     function worldToScreen(worldX, worldY) {
       const scale = Math.max(5, simulation.clientWidth / 80) * zoom;
+      const verticalAnchor = modeSelect.value === "escape" ? 0.5 : 0.75;
 
       return {
-        x: simulation.clientWidth / 2 + worldX * scale,
-        y: simulation.clientHeight * 0.75 - worldY * scale
+        x: simulation.clientWidth / 2 + (worldX - cameraX) * scale,
+        y: simulation.clientHeight * verticalAnchor - (worldY - cameraY) * scale
       };
     }
 
-    function drawBall(screenX, screenY) {
+    function drawBall(screenX, screenY, radius) {
       context.beginPath();
-      context.arc(screenX, screenY, Math.max(8, 10 * zoom), 0, Math.PI * 2);
+      context.arc(screenX, screenY, radius, 0, Math.PI * 2);
 
       context.fillStyle = "#ffda3d";
       context.fill();
@@ -1326,6 +1401,8 @@ a(r) = −g₀(R/r)²`,
       const width = simulation.clientWidth;
       const height = simulation.clientHeight;
       const mode = modeSelect.value;
+
+      updateCamera();
 
       context.clearRect(0, 0, width, height);
 
@@ -1382,7 +1459,7 @@ a(r) = −g₀(R/r)²`,
       }
 
       if (mode === "escape") {
-        const planetRadius = Math.max(numberValue(planetRadiusInput, 12), 1);
+        const planetRadius = Math.max(numberValue(planetRadiusInput, 35), 1);
         const center = worldToScreen(0, 0);
         const surfacePoint = worldToScreen(0, planetRadius);
         const displayRadius = Math.abs(surfacePoint.y - center.y);
@@ -1417,7 +1494,13 @@ a(r) = −g₀(R/r)²`,
       }
 
       const point = worldToScreen(x, y);
-      drawBall(point.x, point.y);
+
+      const ballRadius =
+        mode === "escape"
+          ? Math.max(3, 4 * Math.sqrt(zoom))
+          : Math.max(8, 10 * zoom);
+
+      drawBall(point.x, point.y, ballRadius);
     }
 
     function row(name, value) {
@@ -1508,15 +1591,20 @@ a(r) = −g₀(R/r)²`,
     });
 
     get("zoomIn").addEventListener("click", () => {
-      zoom = Math.min(zoom * 1.25, 6);
+      setZoom(zoom * 1.25);
     });
 
     get("zoomOut").addEventListener("click", () => {
-      zoom = Math.max(zoom / 1.25, 0.2);
+      setZoom(zoom / 1.25);
     });
 
     get("fitView").addEventListener("click", () => {
-      zoom = 1;
+      setZoom(modeSelect.value === "escape" ? autoFitEscapeZoom() : 1);
+    });
+
+    zoomSlider.addEventListener("input", () => {
+      const t = Number(zoomSlider.value) / 100;
+      zoom = MIN_ZOOM * Math.pow(MAX_ZOOM / MIN_ZOOM, t);
     });
 
     simulation.addEventListener(
@@ -1525,9 +1613,9 @@ a(r) = −g₀(R/r)²`,
         event.preventDefault();
 
         if (event.deltaY < 0) {
-          zoom = Math.min(zoom * 1.1, 6);
+          setZoom(zoom * 1.1);
         } else {
-          zoom = Math.max(zoom / 1.1, 0.2);
+          setZoom(zoom / 1.1);
         }
       },
       { passive: false }
