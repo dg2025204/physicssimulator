@@ -566,7 +566,7 @@
 <body>
   <div id="modeModal" class="modal">
     <section class="mode-dialog">
-      <span class="version-badge">v1.1</span>
+      <span class="version-badge">v1.2</span>
 
       <h2>어떤 운동을 시뮬레이션할까요?</h2>
       <p>운동을 선택하면 초기 설정이 적용됩니다.</p>
@@ -782,7 +782,7 @@
           <label>
             천체 반지름 R
             <div class="input-unit">
-              <input id="planetRadius" type="number" value="6.37e6" step="1e5">
+              <input id="planetRadius" type="number" value="12" min="1" step="0.5">
               <span>m</span>
             </div>
           </label>
@@ -919,7 +919,7 @@ fₖ = μN`,
 
       escape: {
         name: "탈출 속도",
-        speed: 11200,
+        speed: 15,
         angle: 90,
         formula:
 `v_escape = √(2g₀R)
@@ -1047,7 +1047,7 @@ a(r) = −g₀(R/r)²`,
 
     function computeEscapeSpeed() {
       const surfaceGravity = Math.max(numberValue(planetGravityInput, 9.8), 0.0001);
-      const planetRadius = Math.max(numberValue(planetRadiusInput, 6.37e6), 1);
+      const planetRadius = Math.max(numberValue(planetRadiusInput, 12), 1);
       return Math.sqrt(2 * surfaceGravity * planetRadius);
     }
 
@@ -1098,13 +1098,15 @@ a(r) = −g₀(R/r)²`,
       }
 
       if (mode === "escape") {
+        const planetRadius = Math.max(numberValue(planetRadiusInput, 12), 1);
+
         x = 0;
-        y = 1;
+        y = planetRadius;
 
         const escapeSpeed = computeEscapeSpeed();
 
         if (useEscapeSpeedInput.checked) {
-          speedInput.value = escapeSpeed.toFixed(1);
+          speedInput.value = escapeSpeed.toFixed(2);
         }
 
         velocityX = 0;
@@ -1189,15 +1191,16 @@ a(r) = −g₀(R/r)²`,
 
       } else if (mode === "escape") {
         const surfaceGravity = Math.max(numberValue(planetGravityInput, 9.8), 0.0001);
-        const planetRadius = Math.max(numberValue(planetRadiusInput, 6.37e6), 1);
+        const planetRadius = Math.max(numberValue(planetRadiusInput, 12), 1);
 
-        const distanceRatio = Math.max(y, 0.01);
+        const distanceFromCenter = Math.max(y, 0.01);
 
         const gravitationalAcceleration =
-          surfaceGravity / (distanceRatio * distanceRatio);
+          surfaceGravity * (planetRadius * planetRadius) /
+          (distanceFromCenter * distanceFromCenter);
 
         accelerationX = 0;
-        accelerationY = -gravitationalAcceleration / planetRadius;
+        accelerationY = -gravitationalAcceleration;
 
         velocityX += accelerationX * deltaTime;
         velocityY += accelerationY * deltaTime;
@@ -1205,8 +1208,8 @@ a(r) = −g₀(R/r)²`,
         x += velocityX * deltaTime;
         y += velocityY * deltaTime;
 
-        if (y < 1) {
-          y = 1;
+        if (y < planetRadius) {
+          y = planetRadius;
           velocityY = 0;
           running = false;
           playPauseButton.textContent = "▶ 재생";
@@ -1379,8 +1382,9 @@ a(r) = −g₀(R/r)²`,
       }
 
       if (mode === "escape") {
+        const planetRadius = Math.max(numberValue(planetRadiusInput, 12), 1);
         const center = worldToScreen(0, 0);
-        const surfacePoint = worldToScreen(0, 1);
+        const surfacePoint = worldToScreen(0, planetRadius);
         const displayRadius = Math.abs(surfacePoint.y - center.y);
 
         context.beginPath();
