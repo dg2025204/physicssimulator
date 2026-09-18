@@ -772,10 +772,10 @@
 
         <div id="escapeSettings" class="mode-settings">
           <label>
-            천체 질량 M
+            표면 중력가속도 g₀
             <div class="input-unit">
-              <input id="planetMass" type="number" value="5.97e24" step="1e23">
-              <span>kg</span>
+              <input id="planetGravity" type="number" value="9.8" step="0.1">
+              <span>m·s⁻²</span>
             </div>
           </label>
 
@@ -853,8 +853,6 @@
   <script>
     "use strict";
 
-    const G_CONSTANT = 6.674e-11;
-
     const MODES = {
       projectile: {
         name: "포물선 운동",
@@ -924,11 +922,12 @@ fₖ = μN`,
         speed: 11200,
         angle: 90,
         formula:
-`v_escape = √(2GM / R)
-a(r) = −GM / r²`,
+`v_escape = √(2g₀R)
+a(r) = −g₀(R/r)²`,
         explanation:
-          "탈출 속도는 물체가 천체의 중력을 벗어나 무한히 멀어질 수 있는 " +
-          "최소 속력입니다. 거리가 멀어질수록 중력가속도는 r²에 반비례해 " +
+          "탈출 속도는 지표면 중력가속도 g₀와 천체의 반지름 R로 구할 수 있으며, " +
+          "물체가 천체의 중력을 벗어나 무한히 멀어질 수 있는 최소 속력입니다. " +
+          "중심으로부터의 거리 r이 멀어질수록 중력가속도는 r²에 반비례해 " +
           "약해지므로, 초기 속력이 탈출 속도보다 크면 물체는 계속 멀어지고, " +
           "작으면 다시 떨어집니다."
       }
@@ -957,7 +956,7 @@ a(r) = −GM / r²`,
     const inclineAngleInput = get("inclineAngle");
     const inclineFrictionInput = get("inclineFriction");
 
-    const planetMassInput = get("planetMass");
+    const planetGravityInput = get("planetGravity");
     const planetRadiusInput = get("planetRadius");
     const useEscapeSpeedInput = get("useEscapeSpeed");
 
@@ -1047,9 +1046,9 @@ a(r) = −GM / r²`,
     }
 
     function computeEscapeSpeed() {
-      const planetMass = Math.max(numberValue(planetMassInput, 5.97e24), 1);
+      const surfaceGravity = Math.max(numberValue(planetGravityInput, 9.8), 0.0001);
       const planetRadius = Math.max(numberValue(planetRadiusInput, 6.37e6), 1);
-      return Math.sqrt((2 * G_CONSTANT * planetMass) / planetRadius);
+      return Math.sqrt(2 * surfaceGravity * planetRadius);
     }
 
     function resetSimulation(resetZoom = false) {
@@ -1189,13 +1188,13 @@ a(r) = −GM / r²`,
         }
 
       } else if (mode === "escape") {
-        const planetMass = Math.max(numberValue(planetMassInput, 5.97e24), 1);
+        const surfaceGravity = Math.max(numberValue(planetGravityInput, 9.8), 0.0001);
         const planetRadius = Math.max(numberValue(planetRadiusInput, 6.37e6), 1);
 
-        const distanceFromCenter = Math.max(y, 0.01) * planetRadius;
+        const distanceRatio = Math.max(y, 0.01);
 
         const gravitationalAcceleration =
-          (G_CONSTANT * planetMass) / (distanceFromCenter * distanceFromCenter);
+          surfaceGravity / (distanceRatio * distanceRatio);
 
         accelerationX = 0;
         accelerationY = -gravitationalAcceleration / planetRadius;
