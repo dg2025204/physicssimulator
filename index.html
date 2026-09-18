@@ -633,7 +633,7 @@
 
 
 <script>
-/* v1.4.1.1: keep escape-velocity initial speed controls synchronized with the simulation */
+/* v1.4.2.1: keep escape-velocity initial speed controls synchronized with the simulation */
 (function () {
   function syncEscapeInitialSpeed() {
     const selectors = [
@@ -682,7 +682,7 @@
 
   <div id="modeModal" class="modal">
     <section class="mode-dialog">
-      <span class="version-badge">v1.4.1</span>
+      <span class="version-badge">v1.4.2</span>
 
 
   <h2>어떤 운동을 시뮬레이션할까요?</h2>
@@ -751,7 +751,7 @@
       <div class="logo">P</div>
       <div>
         <h1>Physics Simulator</h1>
-        <p>인터랙티브 물리 실험실 · v1.4.1</p>
+        <p>인터랙티브 물리 실험실 · v1.4.2</p>
       </div>
     </div>
 
@@ -1238,6 +1238,11 @@ E < 0  → 탈출 불가`,
 
     const ENERGY_EPSILON = 0.05;
 
+    // 탈출 판정의 기준이 되는 초기 역학적 에너지.
+    // 수치 적분 오차 때문에 E<0 물체가 장시간 후 E>0으로
+    // 잘못 판정되는 것을 막습니다.
+    let escapeInitialEnergy = null;
+
 
     function numberValue(input, fallback = 0) {
       const value = Number(input.value);
@@ -1599,6 +1604,10 @@ E < 0  → 탈출 불가`,
       const mode =
         modeSelect.value;
 
+      if (mode !== "escape") {
+        escapeInitialEnergy = null;
+      }
+
       const speed =
         numberValue(speedInput);
 
@@ -1755,8 +1764,11 @@ E < 0  → 탈출 불가`,
           초기 에너지에 따른 상태 표시
         */
 
-        const energy =
+        escapeInitialEnergy =
           computeEscapeMechanicalEnergy();
+
+        const energy =
+          escapeInitialEnergy;
 
         if (energy > ENERGY_EPSILON) {
 
@@ -2065,21 +2077,52 @@ E < 0  → 탈출 불가`,
             distanceFromCenter
           );
 
+        // Velocity Verlet:
+        // 단순 Euler 적분은 장시간 시뮬레이션에서 에너지를 인위적으로
+        // 증가시켜 탈출 불가(v0 < v_escape) 물체가 탈출하는 문제가 생길 수 있습니다.
+        const oldAccelerationX = accelerationX;
+        const oldAccelerationY = accelerationY;
+
+        x +=
+          velocityX * deltaTime +
+          0.5 * oldAccelerationX * deltaTime * deltaTime;
+
+        y +=
+          velocityY * deltaTime +
+          0.5 * oldAccelerationY * deltaTime * deltaTime;
+
+        const newDistanceForAcceleration =
+          Math.max(Math.hypot(x, y), 0.01);
+
+        const newGravitationalAcceleration =
+          surfaceGravity *
+          planetRadius *
+          planetRadius /
+          (
+            newDistanceForAcceleration *
+            newDistanceForAcceleration
+          );
+
+        const newAccelerationX =
+          -newGravitationalAcceleration *
+          (x / newDistanceForAcceleration);
+
+        const newAccelerationY =
+          -newGravitationalAcceleration *
+          (y / newDistanceForAcceleration);
+
         velocityX +=
-          accelerationX *
+          0.5 *
+          (oldAccelerationX + newAccelerationX) *
           deltaTime;
 
         velocityY +=
-          accelerationY *
+          0.5 *
+          (oldAccelerationY + newAccelerationY) *
           deltaTime;
 
-        x +=
-          velocityX *
-          deltaTime;
-
-        y +=
-          velocityY *
-          deltaTime;
+        accelerationX = newAccelerationX;
+        accelerationY = newAccelerationY;
 
 
         /*
@@ -2317,7 +2360,8 @@ E < 0  → 탈출 불가`,
               computeEscapeMechanicalEnergy();
 
             if (
-              energy >
+              escapeInitialEnergy !== null &&
+              escapeInitialEnergy >
               ENERGY_EPSILON
             ) {
 
