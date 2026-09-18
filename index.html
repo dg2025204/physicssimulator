@@ -1,4 +1,5 @@
 <!doctype html>
+
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -16,6 +17,8 @@
       --text: #f7fbff;
       --muted: #9fb1c5;
       --yellow: #ffda3d;
+      --green: #43e6a1;
+      --red: #ff667a;
     }
 
     * {
@@ -260,6 +263,37 @@
       line-height: 1.45;
     }
 
+    #energyStatus {
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      display: none;
+    }
+
+    #energyStatus.escape {
+      display: block;
+      color: #43e6a1;
+      background: rgb(67 230 161 / 10%);
+      border: 1px solid rgb(67 230 161 / 20%);
+    }
+
+    #energyStatus.bound {
+      display: block;
+      color: #ff667a;
+      background: rgb(255 102 122 / 10%);
+      border: 1px solid rgb(255 102 122 / 20%);
+    }
+
+    #energyStatus.minimum {
+      display: block;
+      color: #ffda3d;
+      background: rgb(255 218 61 / 10%);
+      border: 1px solid rgb(255 218 61 / 20%);
+    }
+
     .simulation {
       position: relative;
       min-width: 0;
@@ -373,6 +407,32 @@
       white-space: nowrap;
     }
 
+    .energy-positive {
+      color: var(--green) !important;
+    }
+
+    .energy-negative {
+      color: var(--red) !important;
+    }
+
+    .energy-zero {
+      color: var(--yellow) !important;
+    }
+
+    .escape-help {
+      margin-top: 9px;
+      padding: 9px;
+      border-radius: 8px;
+      background: rgb(59 200 255 / 7%);
+      color: var(--muted);
+      font-size: 0.64rem;
+      line-height: 1.55;
+    }
+
+    .escape-help strong {
+      color: #83dfff;
+    }
+
     /* 운동 선택 모달 */
 
     .modal {
@@ -406,7 +466,7 @@
       position: absolute;
       top: 14px;
       left: 18px;
-      color: rgb(255 255 255 / 25%);
+      color: rgb(255 255 255 / 35%);
       font-size: 0.68rem;
       font-weight: 600;
       letter-spacing: 0.02em;
@@ -570,55 +630,64 @@
       }
     }
   </style>
+
 </head>
 
 <body>
+
+  <!-- 운동 선택 -->
+
   <div id="modeModal" class="modal">
     <section class="mode-dialog">
-      <span class="version-badge">v1.1</span>
+      <span class="version-badge">v1.3</span>
 
-      <h2>어떤 운동을 시뮬레이션할까요?</h2>
-      <p>운동을 선택하면 초기 설정이 적용됩니다.</p>
+```
+  <h2>어떤 운동을 시뮬레이션할까요?</h2>
+  <p>운동을 선택하면 초기 설정이 적용됩니다.</p>
 
-      <div class="mode-grid">
-        <button class="mode-button" type="button" data-mode="projectile">
-          <span>↗</span>
-          <strong>포물선 운동</strong>
-          <small>발사 속도, 각도, 중력</small>
-        </button>
+  <div class="mode-grid">
+    <button class="mode-button" type="button" data-mode="projectile">
+      <span>↗</span>
+      <strong>포물선 운동</strong>
+      <small>발사 속도, 각도, 중력</small>
+    </button>
 
-        <button class="mode-button" type="button" data-mode="freefall">
-          <span>↓</span>
-          <strong>자유 낙하</strong>
-          <small>시작 높이와 중력가속도</small>
-        </button>
+    <button class="mode-button" type="button" data-mode="freefall">
+      <span>↓</span>
+      <strong>자유 낙하</strong>
+      <small>시작 높이와 중력가속도</small>
+    </button>
 
-        <button class="mode-button" type="button" data-mode="friction">
-          <span>▰</span>
-          <strong>마찰 운동</strong>
-          <small>수평면 마찰에 의한 감속</small>
-        </button>
+    <button class="mode-button" type="button" data-mode="friction">
+      <span>▰</span>
+      <strong>마찰 운동</strong>
+      <small>수평면 마찰에 의한 감속</small>
+    </button>
 
-        <button class="mode-button" type="button" data-mode="circular">
-          <span>↻</span>
-          <strong>원운동</strong>
-          <small>반지름과 각속도</small>
-        </button>
+    <button class="mode-button" type="button" data-mode="circular">
+      <span>↻</span>
+      <strong>원운동</strong>
+      <small>반지름과 각속도</small>
+    </button>
 
-        <button class="mode-button" type="button" data-mode="incline">
-          <span>◺</span>
-          <strong>빗면 운동</strong>
-          <small>경사각과 마찰에 의한 가속</small>
-        </button>
+    <button class="mode-button" type="button" data-mode="incline">
+      <span>◺</span>
+      <strong>빗면 운동</strong>
+      <small>경사각과 마찰에 의한 가속</small>
+    </button>
 
-        <button class="mode-button" type="button" data-mode="escape">
-          <span>🚀</span>
-          <strong>탈출 속도</strong>
-          <small>천체 중력을 벗어나는 운동</small>
-        </button>
-      </div>
-    </section>
+    <button class="mode-button" type="button" data-mode="escape">
+      <span>🚀</span>
+      <strong>탈출 속도</strong>
+      <small>역학적 에너지로 탈출 여부 확인</small>
+    </button>
   </div>
+</section>
+```
+
+  </div>
+
+  <!-- 공식 설명 -->
 
   <div id="formulaModal" class="modal hidden">
     <section class="formula-dialog">
@@ -627,8 +696,11 @@
         <button id="closeFormula" class="close-button" type="button">×</button>
       </div>
 
-      <div id="formulaDescription"></div>
-    </section>
+```
+  <div id="formulaDescription"></div>
+</section>
+```
+
   </div>
 
   <header>
@@ -636,250 +708,326 @@
       <div class="logo">P</div>
       <div>
         <h1>Physics Simulator</h1>
-        <p>인터랙티브 물리 실험실</p>
+        <p>인터랙티브 물리 실험실 · v1.3</p>
       </div>
     </div>
 
-    <button id="openMode" class="header-button" type="button">
-      운동 다시 선택
-    </button>
+```
+<button id="openMode" class="header-button" type="button">
+  운동 다시 선택
+</button>
+```
+
   </header>
 
   <main class="app">
-    <aside>
-      <div class="panel-title">
-        <h2>실험 설정</h2>
-        <span id="modeBadge">포물선 운동</span>
+
+```
+<aside>
+
+  <div class="panel-title">
+    <h2>실험 설정</h2>
+    <span id="modeBadge">포물선 운동</span>
+  </div>
+
+  <!-- 운동과 환경 -->
+  <section class="control-card">
+    <h3>운동과 환경</h3>
+
+    <label>
+      운동 종류
+      <select id="mode">
+        <option value="projectile">포물선 운동</option>
+        <option value="freefall">자유 낙하</option>
+        <option value="friction">마찰 운동</option>
+        <option value="circular">원운동</option>
+        <option value="incline">빗면 운동</option>
+        <option value="escape">탈출 속도</option>
+      </select>
+    </label>
+
+    <label>
+      중력 환경
+      <select id="gravity">
+        <option value="9.8">지구 · 9.8 m·s⁻²</option>
+        <option value="1.62">달 · 1.62 m·s⁻²</option>
+        <option value="3.72">화성 · 3.72 m·s⁻²</option>
+        <option value="0">무중력 · 0 m·s⁻²</option>
+      </select>
+    </label>
+  </section>
+
+  <!-- 초기 조건 -->
+  <section class="control-card">
+    <h3>초기 조건</h3>
+
+    <div class="two-columns">
+
+      <label>
+        초기 속력 v₀
+        <div class="input-unit">
+          <input id="speed" type="number" value="15" step="0.1">
+          <span>m·s⁻¹</span>
+        </div>
+      </label>
+
+      <label>
+        질량 m
+        <div class="input-unit">
+          <input id="mass" type="number" value="1" min="0.01" step="0.1">
+          <span>kg</span>
+        </div>
+      </label>
+
+    </div>
+
+    <label>
+      발사 각도 θ
+      <div class="input-unit">
+        <input id="angle" type="number" value="60" step="1">
+        <span>°</span>
+      </div>
+    </label>
+
+    <div class="two-columns">
+
+      <label>
+        추가 가속도 aₓ
+        <div class="input-unit">
+          <input id="accelerationX" type="number" value="0" step="0.1">
+          <span>m·s⁻²</span>
+        </div>
+      </label>
+
+      <label>
+        추가 가속도 aᵧ
+        <div class="input-unit">
+          <input id="accelerationY" type="number" value="0" step="0.1">
+          <span>m·s⁻²</span>
+        </div>
+      </label>
+
+    </div>
+  </section>
+
+  <!-- 모드별 설정 -->
+  <section class="control-card">
+    <h3>모드별 설정</h3>
+
+    <div id="freefallSettings" class="mode-settings">
+
+      <label>
+        시작 높이 h₀
+        <div class="input-unit">
+          <input id="freefallHeight" type="number" value="25" min="1" step="1">
+          <span>m</span>
+        </div>
+      </label>
+
+    </div>
+
+    <div id="frictionSettings" class="mode-settings">
+
+      <label>
+        운동마찰계수 μₖ
+        <input id="frictionCoefficient" type="number" value="0.3" min="0" step="0.01">
+      </label>
+
+    </div>
+
+    <div id="circularSettings" class="mode-settings">
+
+      <label>
+        반지름 r
+        <div class="input-unit">
+          <input id="radius" type="number" value="10" min="1" step="0.5">
+          <span>m</span>
+        </div>
+      </label>
+
+      <label>
+        각속도 ω
+        <div class="input-unit">
+          <input id="angularVelocity" type="number" value="1" step="0.1">
+          <span>rad·s⁻¹</span>
+        </div>
+      </label>
+
+    </div>
+
+    <div id="inclineSettings" class="mode-settings">
+
+      <label>
+        경사각 φ
+        <div class="input-unit">
+          <input id="inclineAngle" type="number" value="30" min="0" max="89" step="1">
+          <span>°</span>
+        </div>
+      </label>
+
+      <label>
+        정지/운동마찰계수 μ
+        <input id="inclineFriction" type="number" value="0.2" min="0" step="0.01">
+      </label>
+
+    </div>
+
+    <div id="escapeSettings" class="mode-settings">
+
+      <label>
+        표면 중력가속도 g₀
+        <div class="input-unit">
+          <input id="planetGravity" type="number" value="9.8" min="0.01" step="0.1">
+          <span>m·s⁻²</span>
+        </div>
+      </label>
+
+      <label>
+        천체 반지름 R
+        <div class="input-unit">
+          <input id="planetRadius" type="number" value="35" min="1" step="0.5">
+          <span>m</span>
+        </div>
+      </label>
+
+      <label class="check-label">
+        <input id="useEscapeSpeed" type="checkbox" checked>
+        계산된 탈출 속도로 발사
+      </label>
+
+      <label>
+        시점
+        <select id="escapeView">
+          <option value="planet">행성 고정 (물체가 움직입니다)</option>
+          <option value="object">물체 고정 (행성이 움직입니다)</option>
+        </select>
+      </label>
+
+      <div class="escape-help">
+        <strong>탈출 조건</strong><br>
+        E = K + U<br>
+        E &gt; 0 : 탈출<br>
+        E = 0 : 최소 탈출 조건<br>
+        E &lt; 0 : 다시 행성으로 낙하
       </div>
 
-      <section class="control-card">
-        <h3>운동과 환경</h3>
+    </div>
 
-        <label>
-          운동 종류
-          <select id="mode">
-            <option value="projectile">포물선 운동</option>
-            <option value="freefall">자유 낙하</option>
-            <option value="friction">마찰 운동</option>
-            <option value="circular">원운동</option>
-            <option value="incline">빗면 운동</option>
-            <option value="escape">탈출 속도</option>
-          </select>
-        </label>
+    <p id="noExtraSettings" style="color:var(--muted);font-size:.72rem;">
+      추가 설정이 필요하지 않습니다.
+    </p>
+  </section>
 
-        <label>
-          중력 환경
-          <select id="gravity">
-            <option value="9.8">지구 · 9.8 m·s⁻²</option>
-            <option value="1.62">달 · 1.62 m·s⁻²</option>
-            <option value="3.72">화성 · 3.72 m·s⁻²</option>
-            <option value="0">무중력 · 0 m·s⁻²</option>
-          </select>
-        </label>
-      </section>
+  <!-- 에너지 상태 -->
+  <div id="energyStatus"></div>
 
-      <section class="control-card">
-        <h3>초기 조건</h3>
+  <!-- 표시 설정 -->
+  <section class="control-card">
+    <h3>표시 설정</h3>
 
-        <div class="two-columns">
-          <label>
-            초기 속력 v₀
-            <div class="input-unit">
-              <input id="speed" type="number" value="15" step="0.1">
-              <span>m·s⁻¹</span>
-            </div>
-          </label>
+    <label class="check-label">
+      <input id="showTrail" type="checkbox" checked>
+      운동 경로 표시
+    </label>
+  </section>
 
-          <label>
-            질량 m
-            <div class="input-unit">
-              <input id="mass" type="number" value="1" min="0.01" step="0.1">
-              <span>kg</span>
-            </div>
-          </label>
-        </div>
+  <!-- 버튼 -->
+  <div class="actions">
 
-        <label>
-          발사 각도 θ
-          <div class="input-unit">
-            <input id="angle" type="number" value="60" step="1">
-            <span>°</span>
-          </div>
-        </label>
+    <button id="start" class="action-button primary" type="button">
+      ▶ 처음부터
+    </button>
 
-        <div class="two-columns">
-          <label>
-            추가 가속도 aₓ
-            <div class="input-unit">
-              <input id="accelerationX" type="number" value="0" step="0.1">
-              <span>m·s⁻²</span>
-            </div>
-          </label>
+    <button id="playPause" class="action-button" type="button">
+      ▶ 재생
+    </button>
 
-          <label>
-            추가 가속도 aᵧ
-            <div class="input-unit">
-              <input id="accelerationY" type="number" value="0" step="0.1">
-              <span>m·s⁻²</span>
-            </div>
-          </label>
-        </div>
-      </section>
+    <button id="reset" class="action-button" type="button">
+      ↻ 초기화
+    </button>
 
-      <section class="control-card">
-        <h3>모드별 설정</h3>
+  </div>
 
-        <div id="freefallSettings" class="mode-settings">
-          <label>
-            시작 높이 h₀
-            <div class="input-unit">
-              <input id="freefallHeight" type="number" value="25" min="1" step="1">
-              <span>m</span>
-            </div>
-          </label>
-        </div>
+  <p id="message">
+    운동을 선택하고 실행해 주세요.
+  </p>
 
-        <div id="frictionSettings" class="mode-settings">
-          <label>
-            운동마찰계수 μₖ
-            <input id="frictionCoefficient" type="number" value="0.3" min="0" step="0.01">
-          </label>
-        </div>
+</aside>
 
-        <div id="circularSettings" class="mode-settings">
-          <label>
-            반지름 r
-            <div class="input-unit">
-              <input id="radius" type="number" value="10" min="1" step="0.5">
-              <span>m</span>
-            </div>
-          </label>
+<!-- 시뮬레이션 -->
+<section id="simulation" class="simulation">
 
-          <label>
-            각속도 ω
-            <div class="input-unit">
-              <input id="angularVelocity" type="number" value="1" step="0.1">
-              <span>rad·s⁻¹</span>
-            </div>
-          </label>
-        </div>
+  <canvas id="canvas"></canvas>
 
-        <div id="inclineSettings" class="mode-settings">
-          <label>
-            경사각 φ
-            <div class="input-unit">
-              <input id="inclineAngle" type="number" value="30" min="0" max="89" step="1">
-              <span>°</span>
-            </div>
-          </label>
+  <div class="tools">
 
-          <label>
-            정지/운동마찰계수 μ
-            <input id="inclineFriction" type="number" value="0.2" min="0" step="0.01">
-          </label>
-        </div>
+    <button id="zoomOut" class="tool-button" type="button">
+      −
+    </button>
 
-        <div id="escapeSettings" class="mode-settings">
-          <label>
-            표면 중력가속도 g₀
-            <div class="input-unit">
-              <input id="planetGravity" type="number" value="9.8" step="0.1">
-              <span>m·s⁻²</span>
-            </div>
-          </label>
+    <input
+      id="zoomSlider"
+      type="range"
+      min="0"
+      max="100"
+      value="50"
+      step="0.1"
+    >
 
-          <label>
-            천체 반지름 R
-            <div class="input-unit">
-              <input id="planetRadius" type="number" value="35" min="1" step="0.5">
-              <span>m</span>
-            </div>
-          </label>
+    <button id="zoomIn" class="tool-button" type="button">
+      ＋
+    </button>
 
-          <label class="check-label">
-            <input id="useEscapeSpeed" type="checkbox" checked>
-            계산된 탈출 속도로 발사
-          </label>
+    <button id="fitView" class="tool-button" type="button">
+      화면 맞춤
+    </button>
 
-          <label>
-            시점
-            <select id="escapeView">
-              <option value="planet">행성 고정 (물체가 움직입니다)</option>
-              <option value="object">물체 고정 (행성이 움직입니다)</option>
-            </select>
-          </label>
-        </div>
+  </div>
 
-        <p id="noExtraSettings" style="color:var(--muted);font-size:.72rem;">
-          추가 설정이 필요하지 않습니다.
-        </p>
-      </section>
+  <div class="overlay formula-card">
 
-      <section class="control-card">
-        <h3>표시 설정</h3>
+    <div class="overlay-title">
+      <strong>적용 공식</strong>
 
-        <label class="check-label">
-          <input id="showTrail" type="checkbox" checked>
-          운동 경로 표시
-        </label>
-      </section>
+      <button id="showFormula" type="button">
+        공식 설명
+      </button>
+    </div>
 
-      <div class="actions">
-        <button id="start" class="action-button primary" type="button">
-          ▶ 처음부터
-        </button>
+    <pre id="formulaText"></pre>
 
-        <button id="playPause" class="action-button" type="button">
-          ▶ 재생
-        </button>
+  </div>
 
-        <button id="reset" class="action-button" type="button">
-          ↻ 초기화
-        </button>
-      </div>
+  <div class="overlay info-card">
 
-      <p id="message">운동을 선택하고 실행해 주세요.</p>
-    </aside>
+    <div class="overlay-title">
+      <strong>실시간 물리량</strong>
+    </div>
 
-    <section id="simulation" class="simulation">
-      <canvas id="canvas"></canvas>
+    <div id="physicsInfo"></div>
 
-      <div class="tools">
-        <button id="zoomOut" class="tool-button" type="button">−</button>
-        <input id="zoomSlider" type="range" min="0" max="100" value="50" step="0.1">
-        <button id="zoomIn" class="tool-button" type="button">＋</button>
-        <button id="fitView" class="tool-button" type="button">화면 맞춤</button>
-      </div>
+  </div>
 
-      <div class="overlay formula-card">
-        <div class="overlay-title">
-          <strong>적용 공식</strong>
-          <button id="showFormula" type="button">공식 설명</button>
-        </div>
-        <pre id="formulaText"></pre>
-      </div>
+</section>
+```
 
-      <div class="overlay info-card">
-        <div class="overlay-title">
-          <strong>실시간 물리량</strong>
-        </div>
-        <div id="physicsInfo"></div>
-      </div>
-    </section>
   </main>
 
   <script>
     "use strict";
 
     const MODES = {
+
       projectile: {
         name: "포물선 운동",
         speed: 15,
         angle: 60,
+
         formula:
 `x = x₀ + v₀cosθ·t
 y = y₀ + v₀sinθ·t − ½gt²
 F⃗g = m g⃗`,
+
         explanation:
           "수평 방향에는 사용자가 추가한 가속도 aₓ가 작용하고, " +
           "수직 방향에는 중력가속도 −g와 추가 가속도 aᵧ가 작용합니다."
@@ -889,21 +1037,25 @@ F⃗g = m g⃗`,
         name: "자유 낙하",
         speed: 0,
         angle: 270,
+
         formula:
 `vᵧ = v₀ᵧ − gt
 y = y₀ + v₀ᵧt − ½gt²`,
+
         explanation:
-          "물체가 중력의 영향으로 수직 낙하합니다. 공기저항을 무시하면 " +
-          "질량과 관계없이 같은 중력가속도를 갖습니다."
+          "물체가 중력의 영향으로 수직 낙하합니다. " +
+          "공기저항을 무시하면 질량과 관계없이 같은 중력가속도를 갖습니다."
       },
 
       friction: {
         name: "마찰 운동",
         speed: 15,
         angle: 0,
+
         formula:
 `fₖ = μₖN = μₖmg
 aₓ = −μₖg·sgn(vₓ)`,
+
         explanation:
           "운동마찰력은 수직항력 N에 비례하며 물체의 운동 방향과 반대로 작용합니다."
       },
@@ -912,43 +1064,54 @@ aₓ = −μₖg·sgn(vₓ)`,
         name: "원운동",
         speed: 10,
         angle: 0,
+
         formula:
 `v = rω
 a꜀ = rω² = v²/r
 F꜀ = mrω²`,
+
         explanation:
-          "속력은 일정하지만 속도 방향이 계속 변하므로 원의 중심을 향하는 " +
-          "구심가속도와 구심력이 존재합니다."
+          "속력은 일정하지만 속도 방향이 계속 변하므로 " +
+          "원의 중심을 향하는 구심가속도와 구심력이 존재합니다."
       },
 
       incline: {
         name: "빗면 운동",
         speed: 0,
         angle: 0,
+
         formula:
-`a = g sinφ − μg cosφ (내려갈 때)
+`a = g sinφ − μg cosφ
 N = mg cosφ
 fₖ = μN`,
+
         explanation:
-          "빗면에 놓인 물체는 중력의 빗면 방향 성분(g sinφ)에 의해 가속되고, " +
-          "마찰력(μmg cosφ)은 운동 방향과 반대로 작용해 가속을 방해합니다. " +
-          "경사각과 마찰계수에 따라 물체가 미끄러지지 않을 수도 있습니다."
+          "빗면에 놓인 물체는 중력의 빗면 방향 성분에 의해 가속되고, " +
+          "마찰력은 운동 방향과 반대로 작용합니다."
       },
 
       escape: {
         name: "탈출 속도",
-        speed: 15,
+        speed: 26.19,
         angle: 90,
+
         formula:
 `v_escape = √(2g₀R)
-a(r) = −g₀(R/r)²`,
+U = −GMm/r
+E = K + U
+
+E > 0  → 탈출
+E = 0  → 최소 탈출
+E < 0  → 탈출 불가`,
+
         explanation:
-          "탈출 속도는 지표면 중력가속도 g₀와 천체의 반지름 R로 구할 수 있으며, " +
-          "물체가 천체의 중력을 벗어나 무한히 멀어질 수 있는 최소 속력입니다. " +
-          "중심으로부터의 거리 r이 멀어질수록 중력가속도는 r²에 반비례해 " +
-          "약해지므로, 초기 속력이 탈출 속도보다 크면 물체는 계속 멀어지고, " +
-          "작으면 다시 떨어집니다."
+          "탈출 여부는 역학적 에너지 E = K + U로 판단합니다. " +
+          "천체 표면에서 U = −g₀Rm이고, " +
+          "탈출 속도는 E = 0이 되는 최소 속력입니다. " +
+          "따라서 발사 속력이 탈출 속도보다 작으면 E < 0이 되어 " +
+          "물체는 최고점에 도달한 뒤 다시 천체로 떨어집니다."
       }
+
     };
 
     const get = (id) => document.getElementById(id);
@@ -962,12 +1125,15 @@ a(r) = −g₀(R/r)²`,
     const speedInput = get("speed");
     const massInput = get("mass");
     const angleInput = get("angle");
+
     const accelerationXInput = get("accelerationX");
     const accelerationYInput = get("accelerationY");
+
     const gravitySelect = get("gravity");
 
     const freefallHeightInput = get("freefallHeight");
     const frictionInput = get("frictionCoefficient");
+
     const radiusInput = get("radius");
     const angularVelocityInput = get("angularVelocity");
 
@@ -976,10 +1142,11 @@ a(r) = −g₀(R/r)²`,
 
     const planetGravityInput = get("planetGravity");
     const planetRadiusInput = get("planetRadius");
+
     const useEscapeSpeedInput = get("useEscapeSpeed");
     const escapeViewSelect = get("escapeView");
-    const zoomSlider = get("zoomSlider");
 
+    const zoomSlider = get("zoomSlider");
     const showTrailInput = get("showTrail");
 
     const startButton = get("start");
@@ -987,6 +1154,8 @@ a(r) = −g₀(R/r)²`,
     const resetButton = get("reset");
 
     const message = get("message");
+    const energyStatus = get("energyStatus");
+
     const formulaText = get("formulaText");
     const physicsInfo = get("physicsInfo");
 
@@ -995,284 +1164,899 @@ a(r) = −g₀(R/r)²`,
     const context = canvas.getContext("2d");
 
     let running = false;
+
     let elapsed = 0;
+
     let x = 0;
     let y = 0;
+
     let velocityX = 0;
     let velocityY = 0;
+
     let accelerationX = 0;
     let accelerationY = 0;
+
     let circularAngle = 0;
+
     let trail = [];
+
     let zoom = 1;
+
     let cameraX = 0;
     let cameraY = 0;
-    let previousTime = performance.now();
 
-    const MIN_ZOOM = 0.02;
-    const MAX_ZOOM = 50;
+    let previousTime = performance.now();
 
     let inclineDistance = 0;
     let inclineVelocity = 0;
 
+    const MIN_ZOOM = 0.02;
+    const MAX_ZOOM = 50;
+
+    const ENERGY_EPSILON = 0.05;
+
+
     function numberValue(input, fallback = 0) {
       const value = Number(input.value);
-      return Number.isFinite(value) ? value : fallback;
+
+      return Number.isFinite(value)
+        ? value
+        : fallback;
     }
+
 
     function currentMode() {
       return MODES[modeSelect.value];
     }
 
+
+    /*
+      탈출 속도
+
+      v_escape = √(2g₀R)
+    */
+    function computeEscapeSpeed() {
+
+      const surfaceGravity =
+        Math.max(
+          numberValue(planetGravityInput, 9.8),
+          0.0001
+        );
+
+      const planetRadius =
+        Math.max(
+          numberValue(planetRadiusInput, 35),
+          1
+        );
+
+      return Math.sqrt(
+        2 * surfaceGravity * planetRadius
+      );
+    }
+
+
+    /*
+      탈출 모드의 중력 퍼텐셜 에너지
+
+      GM = g₀R²
+
+      U = -GMm/r
+
+        = -g₀R²m/r
+    */
+    function computeEscapePotentialEnergy() {
+
+      const mass =
+        Math.max(
+          numberValue(massInput, 1),
+          0.01
+        );
+
+      const surfaceGravity =
+        Math.max(
+          numberValue(planetGravityInput, 9.8),
+          0.0001
+        );
+
+      const planetRadius =
+        Math.max(
+          numberValue(planetRadiusInput, 35),
+          1
+        );
+
+      const distanceFromCenter =
+        Math.max(
+          Math.hypot(x, y),
+          0.0001
+        );
+
+      return (
+        -surfaceGravity *
+        planetRadius *
+        planetRadius *
+        mass /
+        distanceFromCenter
+      );
+    }
+
+
+    /*
+      탈출 모드의 역학적 에너지
+
+      E = K + U
+    */
+    function computeEscapeMechanicalEnergy() {
+
+      const mass =
+        Math.max(
+          numberValue(massInput, 1),
+          0.01
+        );
+
+      const speed =
+        Math.hypot(
+          velocityX,
+          velocityY
+        );
+
+      const kineticEnergy =
+        0.5 * mass * speed * speed;
+
+      const potentialEnergy =
+        computeEscapePotentialEnergy();
+
+      return kineticEnergy + potentialEnergy;
+    }
+
+
+    function updateEnergyStatus() {
+
+      if (modeSelect.value !== "escape") {
+
+        energyStatus.className = "";
+        energyStatus.textContent = "";
+
+        return;
+      }
+
+      const energy =
+        computeEscapeMechanicalEnergy();
+
+      if (energy > ENERGY_EPSILON) {
+
+        energyStatus.className = "escape";
+
+        energyStatus.textContent =
+          "E > 0 · 탈출 가능";
+
+      } else if (energy < -ENERGY_EPSILON) {
+
+        energyStatus.className = "bound";
+
+        energyStatus.textContent =
+          "E < 0 · 중력에 묶임";
+
+      } else {
+
+        energyStatus.className = "minimum";
+
+        energyStatus.textContent =
+          "E ≈ 0 · 최소 탈출 조건";
+      }
+    }
+
+
     function updateModeInterface() {
+
       const mode = modeSelect.value;
       const data = currentMode();
 
       modeBadge.textContent = data.name;
+
       formulaText.textContent = data.formula;
 
-      get("freefallSettings").classList.toggle("active", mode === "freefall");
-      get("frictionSettings").classList.toggle("active", mode === "friction");
-      get("circularSettings").classList.toggle("active", mode === "circular");
-      get("inclineSettings").classList.toggle("active", mode === "incline");
-      get("escapeSettings").classList.toggle("active", mode === "escape");
+      get("freefallSettings")
+        .classList
+        .toggle(
+          "active",
+          mode === "freefall"
+        );
+
+      get("frictionSettings")
+        .classList
+        .toggle(
+          "active",
+          mode === "friction"
+        );
+
+      get("circularSettings")
+        .classList
+        .toggle(
+          "active",
+          mode === "circular"
+        );
+
+      get("inclineSettings")
+        .classList
+        .toggle(
+          "active",
+          mode === "incline"
+        );
+
+      get("escapeSettings")
+        .classList
+        .toggle(
+          "active",
+          mode === "escape"
+        );
 
       get("noExtraSettings").style.display =
-        mode === "projectile" ? "block" : "none";
+        mode === "projectile"
+          ? "block"
+          : "none";
+
+      updateEnergyStatus();
     }
 
+
     function selectMode(mode) {
+
       if (!MODES[mode]) {
         return;
       }
 
       modeSelect.value = mode;
-      speedInput.value = MODES[mode].speed;
-      angleInput.value = MODES[mode].angle;
+
+      speedInput.value =
+        MODES[mode].speed;
+
+      angleInput.value =
+        MODES[mode].angle;
 
       updateModeInterface();
+
       resetSimulation(true);
 
       modeModal.classList.add("hidden");
-      message.textContent = `${MODES[mode].name} 모드가 선택되었습니다.`;
+
+      message.textContent =
+        `${MODES[mode].name} 모드가 선택되었습니다.`;
     }
+
 
     function resizeCanvas() {
-      const rectangle = simulation.getBoundingClientRect();
-      const ratio = Math.min(window.devicePixelRatio || 1, 2);
 
-      canvas.width = Math.max(1, Math.round(rectangle.width * ratio));
-      canvas.height = Math.max(1, Math.round(rectangle.height * ratio));
+      const rectangle =
+        simulation.getBoundingClientRect();
 
-      canvas.style.width = `${rectangle.width}px`;
-      canvas.style.height = `${rectangle.height}px`;
+      const ratio =
+        Math.min(
+          window.devicePixelRatio || 1,
+          2
+        );
 
-      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      canvas.width =
+        Math.max(
+          1,
+          Math.round(rectangle.width * ratio)
+        );
+
+      canvas.height =
+        Math.max(
+          1,
+          Math.round(rectangle.height * ratio)
+        );
+
+      canvas.style.width =
+        `${rectangle.width}px`;
+
+      canvas.style.height =
+        `${rectangle.height}px`;
+
+      context.setTransform(
+        ratio,
+        0,
+        0,
+        ratio,
+        0,
+        0
+      );
     }
 
-    function computeEscapeSpeed() {
-      const surfaceGravity = Math.max(numberValue(planetGravityInput, 9.8), 0.0001);
-      const planetRadius = Math.max(numberValue(planetRadiusInput, 35), 1);
-      return Math.sqrt(2 * surfaceGravity * planetRadius);
-    }
 
     function autoFitEscapeZoom() {
-      const planetRadius = Math.max(numberValue(planetRadiusInput, 35), 1);
-      const baseScale = Math.max(5, simulation.clientWidth / 80);
+
+      const planetRadius =
+        Math.max(
+          numberValue(planetRadiusInput, 35),
+          1
+        );
+
+      const baseScale =
+        Math.max(
+          5,
+          simulation.clientWidth / 80
+        );
+
       const desiredScreenRadius =
-        Math.min(simulation.clientWidth, simulation.clientHeight) * 0.32;
+        Math.min(
+          simulation.clientWidth,
+          simulation.clientHeight
+        ) * 0.32;
 
       return Math.min(
-        Math.max(desiredScreenRadius / (planetRadius * baseScale), MIN_ZOOM),
+        Math.max(
+          desiredScreenRadius /
+          (planetRadius * baseScale),
+          MIN_ZOOM
+        ),
         MAX_ZOOM
       );
     }
 
+
     function setZoom(nextZoom) {
-      zoom = Math.min(Math.max(nextZoom, MIN_ZOOM), MAX_ZOOM);
+
+      zoom =
+        Math.min(
+          Math.max(
+            nextZoom,
+            MIN_ZOOM
+          ),
+          MAX_ZOOM
+        );
 
       const t =
-        Math.log(zoom / MIN_ZOOM) / Math.log(MAX_ZOOM / MIN_ZOOM);
+        Math.log(
+          zoom / MIN_ZOOM
+        ) /
+        Math.log(
+          MAX_ZOOM / MIN_ZOOM
+        );
 
-      zoomSlider.value = (Math.min(Math.max(t, 0), 1) * 100).toFixed(1);
+      zoomSlider.value =
+        (
+          Math.min(
+            Math.max(t, 0),
+            1
+          ) * 100
+        ).toFixed(1);
     }
 
-    function updateCamera() {
-      const mode = modeSelect.value;
 
-      if (mode === "escape" && escapeViewSelect.value === "object") {
+    function updateCamera() {
+
+      const mode =
+        modeSelect.value;
+
+      if (
+        mode === "escape" &&
+        escapeViewSelect.value === "object"
+      ) {
+
         cameraX = x;
         cameraY = y;
+
       } else {
+
         cameraX = 0;
         cameraY = 0;
       }
     }
 
+
     function resetSimulation(resetZoom = false) {
+
       running = false;
+
       elapsed = 0;
+
       trail = [];
 
-      const mode = modeSelect.value;
-      const speed = numberValue(speedInput);
-      const angle = (numberValue(angleInput) * Math.PI) / 180;
+      const mode =
+        modeSelect.value;
+
+      const speed =
+        numberValue(speedInput);
+
+      const angle =
+        numberValue(angleInput) *
+        Math.PI / 180;
 
       x = -20;
       y = 1;
 
-      velocityX = speed * Math.cos(angle);
-      velocityY = speed * Math.sin(angle);
+      velocityX =
+        speed * Math.cos(angle);
 
-      accelerationX = numberValue(accelerationXInput);
-      accelerationY = numberValue(accelerationYInput) - numberValue(gravitySelect, 9.8);
+      velocityY =
+        speed * Math.sin(angle);
+
+      accelerationX =
+        numberValue(
+          accelerationXInput
+        );
+
+      accelerationY =
+        numberValue(
+          accelerationYInput
+        ) -
+        numberValue(
+          gravitySelect,
+          9.8
+        );
+
+
+      /* 자유 낙하 */
 
       if (mode === "freefall") {
+
         x = 0;
-        y = numberValue(freefallHeightInput, 25);
+
+        y =
+          numberValue(
+            freefallHeightInput,
+            25
+          );
+
         velocityX = 0;
-        velocityY = -Math.abs(speed);
+
+        velocityY =
+          -Math.abs(speed);
       }
 
+
+      /* 마찰 운동 */
+
       if (mode === "friction") {
+
         x = -20;
         y = 1;
+
         velocityY = 0;
+
         accelerationY = 0;
       }
 
+
+      /* 원운동 */
+
       if (mode === "circular") {
-        const radius = Math.max(numberValue(radiusInput, 10), 1);
+
+        const radius =
+          Math.max(
+            numberValue(
+              radiusInput,
+              10
+            ),
+            1
+          );
+
         circularAngle = 0;
+
         x = radius;
         y = 8;
       }
 
+
+      /* 빗면 */
+
       if (mode === "incline") {
+
         inclineDistance = 0;
+
         inclineVelocity = 0;
+
         x = 0;
         y = 0;
       }
 
+
+      /*
+        탈출 속도
+
+        여기서 체크박스가 켜져 있으면
+        자동으로 v_escape를 넣습니다.
+
+        체크박스를 끄면 사용자가 입력한
+        속도를 그대로 사용합니다.
+      */
+
       if (mode === "escape") {
-        const planetRadius = Math.max(numberValue(planetRadiusInput, 35), 1);
+
+        const planetRadius =
+          Math.max(
+            numberValue(
+              planetRadiusInput,
+              35
+            ),
+            1
+          );
 
         x = 0;
         y = planetRadius;
 
-        const escapeSpeed = computeEscapeSpeed();
+        const escapeSpeed =
+          computeEscapeSpeed();
 
-        if (useEscapeSpeedInput.checked) {
-          speedInput.value = escapeSpeed.toFixed(2);
+        if (
+          useEscapeSpeedInput.checked
+        ) {
+
+          speedInput.value =
+            escapeSpeed.toFixed(2);
         }
 
-        const currentSpeed = numberValue(speedInput, escapeSpeed);
-        const launchAngle = (numberValue(angleInput, 90) * Math.PI) / 180;
+        const currentSpeed =
+          numberValue(
+            speedInput,
+            escapeSpeed
+          );
 
-        velocityX = currentSpeed * Math.cos(launchAngle);
-        velocityY = currentSpeed * Math.sin(launchAngle);
+        const launchAngle =
+          numberValue(
+            angleInput,
+            90
+          ) *
+          Math.PI / 180;
+
+        velocityX =
+          currentSpeed *
+          Math.cos(launchAngle);
+
+        velocityY =
+          currentSpeed *
+          Math.sin(launchAngle);
+
+        /*
+          초기 에너지에 따른 상태 표시
+        */
+
+        const energy =
+          computeEscapeMechanicalEnergy();
+
+        if (energy > ENERGY_EPSILON) {
+
+          message.textContent =
+            "E > 0 : 물체가 탈출합니다.";
+
+        } else if (
+          energy < -ENERGY_EPSILON
+        ) {
+
+          message.textContent =
+            "E < 0 : 물체가 다시 행성으로 떨어집니다.";
+
+        } else {
+
+          message.textContent =
+            "E ≈ 0 : 최소 탈출 조건입니다.";
+        }
       }
+
 
       if (resetZoom) {
-        setZoom(mode === "escape" ? autoFitEscapeZoom() : 1);
+
+        setZoom(
+          mode === "escape"
+            ? autoFitEscapeZoom()
+            : 1
+        );
       }
 
-      playPauseButton.textContent = "▶ 재생";
+      playPauseButton.textContent =
+        "▶ 재생";
 
       updatePhysicsInfo();
+
       draw();
     }
 
+
     function update(deltaTime) {
-      const mode = modeSelect.value;
-      const gravity = numberValue(gravitySelect, 9.8);
+
+      const mode =
+        modeSelect.value;
+
+      const gravity =
+        numberValue(
+          gravitySelect,
+          9.8
+        );
+
+
+      /* =========================
+         원운동
+         ========================= */
 
       if (mode === "circular") {
-        const radius = Math.max(numberValue(radiusInput, 10), 1);
-        const omega = numberValue(angularVelocityInput, 1);
 
-        circularAngle += omega * deltaTime;
+        const radius =
+          Math.max(
+            numberValue(
+              radiusInput,
+              10
+            ),
+            1
+          );
 
-        x = radius * Math.cos(circularAngle);
-        y = 8 + radius * Math.sin(circularAngle);
+        const omega =
+          numberValue(
+            angularVelocityInput,
+            1
+          );
 
-        velocityX = -radius * omega * Math.sin(circularAngle);
-        velocityY = radius * omega * Math.cos(circularAngle);
+        circularAngle +=
+          omega * deltaTime;
 
-        accelerationX = -radius * omega * omega * Math.cos(circularAngle);
-        accelerationY = -radius * omega * omega * Math.sin(circularAngle);
+        x =
+          radius *
+          Math.cos(circularAngle);
+
+        y =
+          8 +
+          radius *
+          Math.sin(circularAngle);
+
+        velocityX =
+          -radius *
+          omega *
+          Math.sin(circularAngle);
+
+        velocityY =
+          radius *
+          omega *
+          Math.cos(circularAngle);
+
+        accelerationX =
+          -radius *
+          omega *
+          omega *
+          Math.cos(circularAngle);
+
+        accelerationY =
+          -radius *
+          omega *
+          omega *
+          Math.sin(circularAngle);
+
+
+      /*
+        =========================
+        빗면 운동
+        =========================
+      */
 
       } else if (mode === "incline") {
+
         const inclineAngle =
-          (Math.max(0, Math.min(89, numberValue(inclineAngleInput, 30))) * Math.PI) / 180;
+          Math.max(
+            0,
+            Math.min(
+              89,
+              numberValue(
+                inclineAngleInput,
+                30
+              )
+            )
+          ) *
+          Math.PI / 180;
 
-        const frictionCoefficient = Math.max(numberValue(inclineFrictionInput, 0.2), 0);
+        const frictionCoefficient =
+          Math.max(
+            numberValue(
+              inclineFrictionInput,
+              0.2
+            ),
+            0
+          );
 
-        const gravityComponent = gravity * Math.sin(inclineAngle);
-        const normalForceComponent = gravity * Math.cos(inclineAngle);
+        const gravityComponent =
+          gravity *
+          Math.sin(inclineAngle);
 
-        let frictionAcceleration = frictionCoefficient * normalForceComponent;
+        const normalForceComponent =
+          gravity *
+          Math.cos(inclineAngle);
 
-        if (Math.abs(inclineVelocity) < 0.0005) {
-          if (gravityComponent <= frictionAcceleration) {
+        let frictionAcceleration =
+          frictionCoefficient *
+          normalForceComponent;
+
+        if (
+          Math.abs(inclineVelocity) <
+          0.0005
+        ) {
+
+          if (
+            gravityComponent <=
+            frictionAcceleration
+          ) {
+
             inclineVelocity = 0;
-            frictionAcceleration = gravityComponent;
+
+            frictionAcceleration =
+              gravityComponent;
+
           } else {
-            frictionAcceleration = frictionCoefficient * normalForceComponent;
+
+            frictionAcceleration =
+              frictionCoefficient *
+              normalForceComponent;
           }
+
         } else {
+
           frictionAcceleration =
-            Math.sign(inclineVelocity) * frictionCoefficient * normalForceComponent;
+            Math.sign(inclineVelocity) *
+            frictionCoefficient *
+            normalForceComponent;
         }
 
-        const inclineAcceleration = gravityComponent - frictionAcceleration;
+        const inclineAcceleration =
+          gravityComponent -
+          frictionAcceleration;
 
-        inclineVelocity += inclineAcceleration * deltaTime;
-        inclineDistance += inclineVelocity * deltaTime;
+        inclineVelocity +=
+          inclineAcceleration *
+          deltaTime;
+
+        inclineDistance +=
+          inclineVelocity *
+          deltaTime;
 
         if (inclineDistance < 0) {
+
           inclineDistance = 0;
+
           inclineVelocity = 0;
         }
 
-        x = inclineDistance * Math.cos(inclineAngle);
-        y = Math.max(numberValue(radiusInput, 10), 10) - inclineDistance * Math.sin(inclineAngle);
+        x =
+          inclineDistance *
+          Math.cos(inclineAngle);
 
-        velocityX = inclineVelocity * Math.cos(inclineAngle);
-        velocityY = -inclineVelocity * Math.sin(inclineAngle);
-        accelerationX = inclineAcceleration * Math.cos(inclineAngle);
-        accelerationY = -inclineAcceleration * Math.sin(inclineAngle);
+        y =
+          Math.max(
+            numberValue(
+              radiusInput,
+              10
+            ),
+            10
+          ) -
+          inclineDistance *
+          Math.sin(inclineAngle);
 
-        if (inclineDistance > 0 && y <= 0.01) {
+        velocityX =
+          inclineVelocity *
+          Math.cos(inclineAngle);
+
+        velocityY =
+          -inclineVelocity *
+          Math.sin(inclineAngle);
+
+        accelerationX =
+          inclineAcceleration *
+          Math.cos(inclineAngle);
+
+        accelerationY =
+          -inclineAcceleration *
+          Math.sin(inclineAngle);
+
+        if (
+          inclineDistance > 0 &&
+          y <= 0.01
+        ) {
+
           running = false;
-          playPauseButton.textContent = "▶ 재생";
-          message.textContent = "물체가 빗면 끝에 도달했습니다.";
+
+          playPauseButton.textContent =
+            "▶ 재생";
+
+          message.textContent =
+            "물체가 빗면 끝에 도달했습니다.";
         }
 
-      } else if (mode === "escape") {
-        const surfaceGravity = Math.max(numberValue(planetGravityInput, 9.8), 0.0001);
-        const planetRadius = Math.max(numberValue(planetRadiusInput, 35), 1);
 
-        const distanceFromCenter = Math.max(Math.hypot(x, y), 0.01);
+      /*
+        =========================
+        탈출 속도
+        =========================
+      */
+
+      } else if (mode === "escape") {
+
+        const surfaceGravity =
+          Math.max(
+            numberValue(
+              planetGravityInput,
+              9.8
+            ),
+            0.0001
+          );
+
+        const planetRadius =
+          Math.max(
+            numberValue(
+              planetRadiusInput,
+              35
+            ),
+            1
+          );
+
+        const distanceFromCenter =
+          Math.max(
+            Math.hypot(x, y),
+            0.01
+          );
+
+        /*
+          g(r) = g₀R²/r²
+        */
 
         const gravitationalAcceleration =
-          (surfaceGravity * planetRadius * planetRadius) /
-          (distanceFromCenter * distanceFromCenter);
+          surfaceGravity *
+          planetRadius *
+          planetRadius /
+          (
+            distanceFromCenter *
+            distanceFromCenter
+          );
 
-        accelerationX = -gravitationalAcceleration * (x / distanceFromCenter);
-        accelerationY = -gravitationalAcceleration * (y / distanceFromCenter);
+        /*
+          중력 방향은 항상
+          행성 중심 방향
+        */
 
-        velocityX += accelerationX * deltaTime;
-        velocityY += accelerationY * deltaTime;
+        accelerationX =
+          -gravitationalAcceleration *
+          (
+            x /
+            distanceFromCenter
+          );
 
-        x += velocityX * deltaTime;
-        y += velocityY * deltaTime;
+        accelerationY =
+          -gravitationalAcceleration *
+          (
+            y /
+            distanceFromCenter
+          );
 
-        const newDistance = Math.max(Math.hypot(x, y), 0.0001);
+        velocityX +=
+          accelerationX *
+          deltaTime;
 
-        if (newDistance < planetRadius) {
-          const pushOut = planetRadius / newDistance;
+        velocityY +=
+          accelerationY *
+          deltaTime;
+
+        x +=
+          velocityX *
+          deltaTime;
+
+        y +=
+          velocityY *
+          deltaTime;
+
+
+        /*
+          행성 표면과 충돌
+        */
+
+        const newDistance =
+          Math.max(
+            Math.hypot(x, y),
+            0.0001
+          );
+
+        if (
+          newDistance <
+          planetRadius
+        ) {
+
+          const pushOut =
+            planetRadius /
+            newDistance;
 
           x *= pushOut;
           y *= pushOut;
@@ -1281,373 +2065,1290 @@ a(r) = −g₀(R/r)²`,
           velocityY = 0;
 
           running = false;
-          playPauseButton.textContent = "▶ 재생";
-          message.textContent = "물체가 행성 표면에 충돌했습니다.";
+
+          playPauseButton.textContent =
+            "▶ 재생";
+
+          message.textContent =
+            "E < 0 : 물체가 행성 표면으로 돌아왔습니다.";
         }
 
-      } else {
-        accelerationX = numberValue(accelerationXInput);
-        accelerationY = numberValue(accelerationYInput);
 
-        if (mode === "projectile" || mode === "freefall") {
+        /*
+          역학적 에너지에 따른
+          실시간 상태 표시
+        */
+
+        updateEnergyStatus();
+
+
+      /*
+        =========================
+        일반 운동
+        =========================
+      */
+
+      } else {
+
+        accelerationX =
+          numberValue(
+            accelerationXInput
+          );
+
+        accelerationY =
+          numberValue(
+            accelerationYInput
+          );
+
+        if (
+          mode === "projectile" ||
+          mode === "freefall"
+        ) {
+
           accelerationY -= gravity;
         }
 
         if (mode === "friction") {
-          const coefficient = Math.max(numberValue(frictionInput, 0.3), 0);
 
-          if (Math.abs(velocityX) > 0.001) {
-            accelerationX -= Math.sign(velocityX) * coefficient * gravity;
+          const coefficient =
+            Math.max(
+              numberValue(
+                frictionInput,
+                0.3
+              ),
+              0
+            );
+
+          if (
+            Math.abs(velocityX) >
+            0.001
+          ) {
+
+            accelerationX -=
+              Math.sign(velocityX) *
+              coefficient *
+              gravity;
           }
 
           accelerationY = 0;
         }
 
-        const oldVelocityX = velocityX;
+        const oldVelocityX =
+          velocityX;
 
-        velocityX += accelerationX * deltaTime;
-        velocityY += accelerationY * deltaTime;
+        velocityX +=
+          accelerationX *
+          deltaTime;
+
+        velocityY +=
+          accelerationY *
+          deltaTime;
 
         if (
           mode === "friction" &&
           oldVelocityX !== 0 &&
-          Math.sign(oldVelocityX) !== Math.sign(velocityX)
+          Math.sign(oldVelocityX) !==
+            Math.sign(velocityX)
         ) {
+
           velocityX = 0;
         }
 
-        x += velocityX * deltaTime;
-        y += velocityY * deltaTime;
+        x +=
+          velocityX *
+          deltaTime;
+
+        y +=
+          velocityY *
+          deltaTime;
+
+
+        /*
+          지면 충돌
+        */
 
         if (y < 1) {
+
           y = 1;
 
           if (mode === "projectile") {
+
             velocityY *= -0.5;
 
-            if (Math.abs(velocityY) < 0.08) {
+            if (
+              Math.abs(velocityY) <
+              0.08
+            ) {
+
               velocityY = 0;
             }
+
           } else {
+
             velocityY = 0;
+
             running = false;
-            playPauseButton.textContent = "▶ 재생";
-            message.textContent = "물체가 바닥에 도달해 일시정지했습니다.";
+
+            playPauseButton.textContent =
+              "▶ 재생";
+
+            message.textContent =
+              "물체가 바닥에 도달해 일시정지했습니다.";
           }
         }
 
-        if (mode === "friction" && Math.abs(velocityX) < 0.001) {
+
+        /*
+          마찰로 정지
+        */
+
+        if (
+          mode === "friction" &&
+          Math.abs(velocityX) <
+            0.001
+        ) {
+
           velocityX = 0;
+
           running = false;
-          playPauseButton.textContent = "▶ 재생";
-          message.textContent = "마찰력으로 물체가 정지했습니다.";
+
+          playPauseButton.textContent =
+            "▶ 재생";
+
+          message.textContent =
+            "마찰력으로 물체가 정지했습니다.";
         }
       }
 
+
       elapsed += deltaTime;
 
+
       if (showTrailInput.checked) {
-        trail.push({ x, y });
+
+        trail.push({
+          x,
+          y
+        });
 
         if (trail.length > 1500) {
           trail.shift();
         }
       }
 
+
       updatePhysicsInfo();
 
+
+      /*
+        화면 밖으로 나간 경우
+      */
+
       const cameraFollowsObject =
-        mode === "escape" && escapeViewSelect.value === "object";
+        mode === "escape" &&
+        escapeViewSelect.value === "object";
 
       if (!cameraFollowsObject) {
-        const screenPoint = worldToScreen(x, y);
+
+        const screenPoint =
+          worldToScreen(x, y);
 
         if (
           screenPoint.x < -60 ||
-          screenPoint.x > simulation.clientWidth + 60 ||
+          screenPoint.x >
+            simulation.clientWidth + 60 ||
           screenPoint.y < -60 ||
-          screenPoint.y > simulation.clientHeight + 60
+          screenPoint.y >
+            simulation.clientHeight + 60
         ) {
-          running = false;
-          playPauseButton.textContent = "▶ 재생";
-          message.textContent = "물체가 화면 밖으로 이동해 일시정지했습니다. 화면을 축소하세요.";
+
+          /*
+            탈출 모드에서 E > 0이면
+            화면 밖으로 나간 것이
+            곧 탈출 성공을 의미합니다.
+          */
+
+          if (mode === "escape") {
+
+            const energy =
+              computeEscapeMechanicalEnergy();
+
+            if (
+              energy >
+              ENERGY_EPSILON
+            ) {
+
+              running = false;
+
+              playPauseButton.textContent =
+                "▶ 재생";
+
+              message.textContent =
+                "E > 0 : 물체가 중력을 벗어나 탈출했습니다.";
+            }
+
+          } else {
+
+            running = false;
+
+            playPauseButton.textContent =
+              "▶ 재생";
+
+            message.textContent =
+              "물체가 화면 밖으로 이동해 일시정지했습니다. 화면을 축소하세요.";
+          }
         }
       }
     }
 
-    function worldToScreen(worldX, worldY) {
-      const scale = Math.max(5, simulation.clientWidth / 80) * zoom;
-      const verticalAnchor = modeSelect.value === "escape" ? 0.5 : 0.75;
+
+    function worldToScreen(
+      worldX,
+      worldY
+    ) {
+
+      const scale =
+        Math.max(
+          5,
+          simulation.clientWidth / 80
+        ) *
+        zoom;
+
+      const verticalAnchor =
+        modeSelect.value === "escape"
+          ? 0.5
+          : 0.75;
 
       return {
-        x: simulation.clientWidth / 2 + (worldX - cameraX) * scale,
-        y: simulation.clientHeight * verticalAnchor - (worldY - cameraY) * scale
+
+        x:
+          simulation.clientWidth / 2 +
+          (
+            worldX - cameraX
+          ) *
+          scale,
+
+        y:
+          simulation.clientHeight *
+          verticalAnchor -
+          (
+            worldY - cameraY
+          ) *
+          scale
       };
     }
 
-    function drawBall(screenX, screenY, radius) {
-      context.beginPath();
-      context.arc(screenX, screenY, radius, 0, Math.PI * 2);
 
-      context.fillStyle = "#ffda3d";
+    function drawBall(
+      screenX,
+      screenY,
+      radius
+    ) {
+
+      context.beginPath();
+
+      context.arc(
+        screenX,
+        screenY,
+        radius,
+        0,
+        Math.PI * 2
+      );
+
+      context.fillStyle =
+        "#ffda3d";
+
       context.fill();
 
-      context.strokeStyle = "#ffffff";
+      context.strokeStyle =
+        "#ffffff";
+
       context.lineWidth = 2;
+
       context.stroke();
     }
 
+
     function draw() {
-      const width = simulation.clientWidth;
-      const height = simulation.clientHeight;
-      const mode = modeSelect.value;
+
+      const width =
+        simulation.clientWidth;
+
+      const height =
+        simulation.clientHeight;
+
+      const mode =
+        modeSelect.value;
 
       updateCamera();
 
-      context.clearRect(0, 0, width, height);
+      context.clearRect(
+        0,
+        0,
+        width,
+        height
+      );
 
-      const background = context.createLinearGradient(0, 0, 0, height);
-      background.addColorStop(0, "#0a1d35");
-      background.addColorStop(1, "#020811");
 
-      context.fillStyle = background;
-      context.fillRect(0, 0, width, height);
+      /*
+        배경
+      */
 
-      if (mode !== "circular" && mode !== "incline" && mode !== "escape") {
-        const ground = worldToScreen(0, 0);
+      const background =
+        context.createLinearGradient(
+          0,
+          0,
+          0,
+          height
+        );
 
-        context.fillStyle = "#5e6873";
-        context.fillRect(0, ground.y, width, height - ground.y);
+      background.addColorStop(
+        0,
+        "#0a1d35"
+      );
+
+      background.addColorStop(
+        1,
+        "#020811"
+      );
+
+      context.fillStyle =
+        background;
+
+      context.fillRect(
+        0,
+        0,
+        width,
+        height
+      );
+
+
+      /*
+        일반 지면
+      */
+
+      if (
+        mode !== "circular" &&
+        mode !== "incline" &&
+        mode !== "escape"
+      ) {
+
+        const ground =
+          worldToScreen(0, 0);
+
+        context.fillStyle =
+          "#5e6873";
+
+        context.fillRect(
+          0,
+          ground.y,
+          width,
+          height - ground.y
+        );
       }
+
+
+      /*
+        원운동
+      */
 
       if (mode === "circular") {
-        const radius = Math.max(numberValue(radiusInput, 10), 1);
-        const center = worldToScreen(0, 8);
-        const circleRadius = radius * Math.max(5, width / 80) * zoom;
+
+        const radius =
+          Math.max(
+            numberValue(
+              radiusInput,
+              10
+            ),
+            1
+          );
+
+        const center =
+          worldToScreen(0, 8);
+
+        const circleRadius =
+          radius *
+          Math.max(
+            5,
+            width / 80
+          ) *
+          zoom;
 
         context.beginPath();
-        context.arc(center.x, center.y, circleRadius, 0, Math.PI * 2);
 
-        context.strokeStyle = "rgba(79,156,214,0.8)";
+        context.arc(
+          center.x,
+          center.y,
+          circleRadius,
+          0,
+          Math.PI * 2
+        );
+
+        context.strokeStyle =
+          "rgba(79,156,214,0.8)";
+
         context.lineWidth = 2;
+
         context.stroke();
       }
+
+
+      /*
+        빗면
+      */
 
       if (mode === "incline") {
+
         const inclineAngle =
-          (Math.max(0, Math.min(89, numberValue(inclineAngleInput, 30))) * Math.PI) / 180;
+          Math.max(
+            0,
+            Math.min(
+              89,
+              numberValue(
+                inclineAngleInput,
+                30
+              )
+            )
+          ) *
+          Math.PI / 180;
 
-        const rampHeight = Math.max(numberValue(radiusInput, 10), 10);
-        const rampLength = rampHeight / Math.tan(inclineAngle || 0.01);
+        const rampHeight =
+          Math.max(
+            numberValue(
+              radiusInput,
+              10
+            ),
+            10
+          );
 
-        const top = worldToScreen(0, rampHeight);
-        const bottom = worldToScreen(0, 0);
-        const right = worldToScreen(rampLength, 0);
+        const rampLength =
+          rampHeight /
+          Math.tan(
+            inclineAngle || 0.01
+          );
+
+        const top =
+          worldToScreen(
+            0,
+            rampHeight
+          );
+
+        const bottom =
+          worldToScreen(
+            0,
+            0
+          );
+
+        const right =
+          worldToScreen(
+            rampLength,
+            0
+          );
 
         context.beginPath();
-        context.moveTo(top.x, top.y);
-        context.lineTo(bottom.x, bottom.y);
-        context.lineTo(right.x, right.y);
+
+        context.moveTo(
+          top.x,
+          top.y
+        );
+
+        context.lineTo(
+          bottom.x,
+          bottom.y
+        );
+
+        context.lineTo(
+          right.x,
+          right.y
+        );
+
         context.closePath();
 
-        context.fillStyle = "rgba(94,104,115,0.85)";
+        context.fillStyle =
+          "rgba(94,104,115,0.85)";
+
         context.fill();
 
-        context.strokeStyle = "#8fa5bb";
+        context.strokeStyle =
+          "#8fa5bb";
+
         context.lineWidth = 2;
+
         context.stroke();
       }
+
+
+      /*
+        행성
+      */
 
       if (mode === "escape") {
-        const planetRadius = Math.max(numberValue(planetRadiusInput, 35), 1);
-        const center = worldToScreen(0, 0);
-        const surfacePoint = worldToScreen(0, planetRadius);
-        const displayRadius = Math.abs(surfacePoint.y - center.y);
+
+        const planetRadius =
+          Math.max(
+            numberValue(
+              planetRadiusInput,
+              35
+            ),
+            1
+          );
+
+        const center =
+          worldToScreen(
+            0,
+            0
+          );
+
+        const surfacePoint =
+          worldToScreen(
+            0,
+            planetRadius
+          );
+
+        const displayRadius =
+          Math.abs(
+            surfacePoint.y -
+            center.y
+          );
+
+
+        /*
+          행성 글로우
+        */
+
+        const glow =
+          context.createRadialGradient(
+            center.x,
+            center.y,
+            displayRadius * 0.7,
+            center.x,
+            center.y,
+            displayRadius * 1.5
+          );
+
+        glow.addColorStop(
+          0,
+          "rgba(61,111,168,0.2)"
+        );
+
+        glow.addColorStop(
+          1,
+          "rgba(61,111,168,0)"
+        );
+
+        context.fillStyle =
+          glow;
 
         context.beginPath();
-        context.arc(center.x, center.y, displayRadius, 0, Math.PI * 2);
 
-        context.fillStyle = "#3d6fa8";
+        context.arc(
+          center.x,
+          center.y,
+          displayRadius * 1.5,
+          0,
+          Math.PI * 2
+        );
+
         context.fill();
 
-        context.strokeStyle = "#9fd6ff";
-        context.lineWidth = 2;
-        context.stroke();
-      }
 
-      if (showTrailInput.checked && trail.length > 1) {
+        /*
+          행성 본체
+        */
+
         context.beginPath();
 
-        trail.forEach((point, index) => {
-          const screen = worldToScreen(point.x, point.y);
+        context.arc(
+          center.x,
+          center.y,
+          displayRadius,
+          0,
+          Math.PI * 2
+        );
 
-          if (index === 0) {
-            context.moveTo(screen.x, screen.y);
-          } else {
-            context.lineTo(screen.x, screen.y);
-          }
-        });
+        context.fillStyle =
+          "#3d6fa8";
 
-        context.strokeStyle = "#ff9f25";
+        context.fill();
+
+        context.strokeStyle =
+          "#9fd6ff";
+
         context.lineWidth = 2;
+
         context.stroke();
       }
 
-      const point = worldToScreen(x, y);
+
+      /*
+        궤적
+      */
+
+      if (
+        showTrailInput.checked &&
+        trail.length > 1
+      ) {
+
+        context.beginPath();
+
+        trail.forEach(
+          (point, index) => {
+
+            const screen =
+              worldToScreen(
+                point.x,
+                point.y
+              );
+
+            if (index === 0) {
+
+              context.moveTo(
+                screen.x,
+                screen.y
+              );
+
+            } else {
+
+              context.lineTo(
+                screen.x,
+                screen.y
+              );
+            }
+          }
+        );
+
+        context.strokeStyle =
+          "#ff9f25";
+
+        context.lineWidth = 2;
+
+        context.stroke();
+      }
+
+
+      /*
+        물체
+      */
+
+      const point =
+        worldToScreen(
+          x,
+          y
+        );
 
       const ballRadius =
         mode === "escape"
-          ? Math.max(3, 4 * Math.sqrt(zoom))
-          : Math.max(8, 10 * zoom);
+          ? Math.max(
+              3,
+              4 * Math.sqrt(zoom)
+            )
+          : Math.max(
+              8,
+              10 * zoom
+            );
 
-      drawBall(point.x, point.y, ballRadius);
+      drawBall(
+        point.x,
+        point.y,
+        ballRadius
+      );
     }
 
-    function row(name, value) {
+
+    function row(
+      name,
+      value,
+      className = ""
+    ) {
+
       return `
         <div class="physics-row">
-          <span class="physics-name">${name}</span>
-          <span class="physics-value">${value}</span>
+          <span class="physics-name">
+            ${name}
+          </span>
+
+          <span class="physics-value ${className}">
+            ${value}
+          </span>
         </div>
       `;
     }
 
+
     function updatePhysicsInfo() {
-      const mass = Math.max(numberValue(massInput, 1), 0.01);
-      const speed = Math.hypot(velocityX, velocityY);
 
-      const forceX = mass * accelerationX;
-      const forceY = mass * accelerationY;
+      const mass =
+        Math.max(
+          numberValue(
+            massInput,
+            1
+          ),
+          0.01
+        );
 
-      const kineticEnergy = 0.5 * mass * speed * speed;
+      const speed =
+        Math.hypot(
+          velocityX,
+          velocityY
+        );
 
-      const gravity = numberValue(gravitySelect, 9.8);
-      const potentialEnergy = mass * gravity * Math.max(y - 1, 0);
+      const forceX =
+        mass * accelerationX;
+
+      const forceY =
+        mass * accelerationY;
+
+      const kineticEnergy =
+        0.5 *
+        mass *
+        speed *
+        speed;
+
+      let potentialEnergy;
+
+      let mechanicalEnergy;
+
+      /*
+        탈출 모드
+      */
+
+      if (
+        modeSelect.value === "escape"
+      ) {
+
+        potentialEnergy =
+          computeEscapePotentialEnergy();
+
+        mechanicalEnergy =
+          kineticEnergy +
+          potentialEnergy;
+
+      } else {
+
+        const gravity =
+          numberValue(
+            gravitySelect,
+            9.8
+          );
+
+        potentialEnergy =
+          mass *
+          gravity *
+          Math.max(
+            y - 1,
+            0
+          );
+
+        mechanicalEnergy =
+          kineticEnergy +
+          potentialEnergy;
+      }
+
+
+      let energyClass = "";
+
+      if (
+        modeSelect.value === "escape"
+      ) {
+
+        if (
+          mechanicalEnergy >
+          ENERGY_EPSILON
+        ) {
+
+          energyClass =
+            "energy-positive";
+
+        } else if (
+          mechanicalEnergy <
+          -ENERGY_EPSILON
+        ) {
+
+          energyClass =
+            "energy-negative";
+
+        } else {
+
+          energyClass =
+            "energy-zero";
+        }
+      }
+
 
       let extraRow = "";
 
-      if (modeSelect.value === "escape") {
-        const escapeSpeed = computeEscapeSpeed();
-        extraRow = row("탈출 속도", `${escapeSpeed.toFixed(1)} m·s⁻¹`);
+      if (
+        modeSelect.value === "escape"
+      ) {
+
+        const escapeSpeed =
+          computeEscapeSpeed();
+
+        extraRow =
+          row(
+            "탈출 속도",
+            `${escapeSpeed.toFixed(2)} m·s⁻¹`
+          );
       }
+
 
       physicsInfo.innerHTML =
-        row("시간 t", `${elapsed.toFixed(2)} s`) +
-        row("위치 r⃗", `(${x.toFixed(2)}, ${y.toFixed(2)}) m`) +
-        row("속도 v⃗", `(${velocityX.toFixed(2)}, ${velocityY.toFixed(2)}) m·s⁻¹`) +
-        row("가속도 a⃗", `(${accelerationX.toFixed(2)}, ${accelerationY.toFixed(2)}) m·s⁻²`) +
-        row("알짜힘 F⃗", `(${forceX.toFixed(2)}, ${forceY.toFixed(2)}) N`) +
-        row("운동에너지 K", `${kineticEnergy.toFixed(2)} J`) +
-        row("위치에너지 U", `${potentialEnergy.toFixed(2)} J`) +
+
+        row(
+          "시간 t",
+          `${elapsed.toFixed(2)} s`
+        ) +
+
+        row(
+          "위치 r⃗",
+          `(${x.toFixed(2)}, ${y.toFixed(2)}) m`
+        ) +
+
+        row(
+          "속도 v⃗",
+          `(${velocityX.toFixed(2)}, ${velocityY.toFixed(2)}) m·s⁻¹`
+        ) +
+
+        row(
+          "가속도 a⃗",
+          `(${accelerationX.toFixed(2)}, ${accelerationY.toFixed(2)}) m·s⁻²`
+        ) +
+
+        row(
+          "알짜힘 F⃗",
+          `(${forceX.toFixed(2)}, ${forceY.toFixed(2)}) N`
+        ) +
+
+        row(
+          "운동에너지 K",
+          `${kineticEnergy.toFixed(2)} J`
+        ) +
+
+        row(
+          "위치에너지 U",
+          `${potentialEnergy.toFixed(2)} J`
+        ) +
+
+        row(
+          "역학적 에너지 E",
+          `${mechanicalEnergy.toFixed(2)} J`,
+          energyClass
+        ) +
+
         extraRow;
+
+
+      updateEnergyStatus();
     }
 
-    function animate(now) {
-      requestAnimationFrame(animate);
 
-      const deltaTime = Math.min((now - previousTime) / 1000, 0.03);
-      previousTime = now;
+    /*
+      운동 선택
+    */
 
-      if (running) {
-        update(deltaTime);
+    document
+      .querySelectorAll("[data-mode]")
+      .forEach(
+        (button) => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              selectMode(
+                button.dataset.mode
+              );
+            }
+          );
+        }
+      );
+
+
+    /*
+      셀렉트로 운동 변경
+    */
+
+    modeSelect.addEventListener(
+      "change",
+      () => {
+
+        updateModeInterface();
+
+        resetSimulation(true);
       }
+    );
 
-      draw();
-    }
 
-    document.querySelectorAll("[data-mode]").forEach((button) => {
-      button.addEventListener("click", () => {
-        selectMode(button.dataset.mode);
-      });
-    });
+    /*
+      운동 다시 선택
+    */
 
-    modeSelect.addEventListener("change", () => {
-      updateModeInterface();
-      resetSimulation(true);
-    });
+    get("openMode")
+      .addEventListener(
+        "click",
+        () => {
 
-    get("openMode").addEventListener("click", () => {
-      running = false;
-      modeModal.classList.remove("hidden");
-    });
+          running = false;
 
-    startButton.addEventListener("click", () => {
-      resetSimulation();
-      running = true;
-      playPauseButton.textContent = "Ⅱ 일시정지";
-      message.textContent = `${currentMode().name} 실행 중`;
-    });
+          modeModal.classList.remove(
+            "hidden"
+          );
+        }
+      );
 
-    playPauseButton.addEventListener("click", () => {
-      running = !running;
 
-      playPauseButton.textContent = running ? "Ⅱ 일시정지" : "▶ 재생";
-      message.textContent = running ? "시뮬레이션 실행 중" : "일시정지되었습니다.";
-    });
+    /*
+      처음부터
+    */
 
-    resetButton.addEventListener("click", () => {
-      resetSimulation();
-      message.textContent = "초기화되었습니다.";
-    });
+    startButton.addEventListener(
+      "click",
+      () => {
 
-    get("zoomIn").addEventListener("click", () => {
-      setZoom(zoom * 1.25);
-    });
+        resetSimulation();
 
-    get("zoomOut").addEventListener("click", () => {
-      setZoom(zoom / 1.25);
-    });
+        running = true;
 
-    get("fitView").addEventListener("click", () => {
-      setZoom(modeSelect.value === "escape" ? autoFitEscapeZoom() : 1);
-    });
+        playPauseButton.textContent =
+          "Ⅱ 일시정지";
 
-    zoomSlider.addEventListener("input", () => {
-      const t = Number(zoomSlider.value) / 100;
-      zoom = MIN_ZOOM * Math.pow(MAX_ZOOM / MIN_ZOOM, t);
-    });
+        if (
+          modeSelect.value ===
+          "escape"
+        ) {
+
+          const energy =
+            computeEscapeMechanicalEnergy();
+
+          if (
+            energy >
+            ENERGY_EPSILON
+          ) {
+
+            message.textContent =
+              "E > 0 · 탈출 운동 실행 중";
+
+          } else if (
+            energy <
+            -ENERGY_EPSILON
+          ) {
+
+            message.textContent =
+              "E < 0 · 탈출하지 못하고 다시 떨어집니다.";
+
+          } else {
+
+            message.textContent =
+              "E ≈ 0 · 최소 탈출 조건으로 실행 중";
+          }
+
+        } else {
+
+          message.textContent =
+            `${currentMode().name} 실행 중`;
+        }
+      }
+    );
+
+
+    /*
+      재생 / 일시정지
+    */
+
+    playPauseButton.addEventListener(
+      "click",
+      () => {
+
+        running = !running;
+
+        playPauseButton.textContent =
+          running
+            ? "Ⅱ 일시정지"
+            : "▶ 재생";
+
+        message.textContent =
+          running
+            ? "시뮬레이션 실행 중"
+            : "일시정지되었습니다.";
+      }
+    );
+
+
+    /*
+      초기화
+    */
+
+    resetButton.addEventListener(
+      "click",
+      () => {
+
+        resetSimulation();
+
+        message.textContent =
+          "초기화되었습니다.";
+      }
+    );
+
+
+    /*
+      줌
+    */
+
+    get("zoomIn")
+      .addEventListener(
+        "click",
+        () => {
+
+          setZoom(
+            zoom * 1.25
+          );
+        }
+      );
+
+
+    get("zoomOut")
+      .addEventListener(
+        "click",
+        () => {
+
+          setZoom(
+            zoom / 1.25
+          );
+        }
+      );
+
+
+    get("fitView")
+      .addEventListener(
+        "click",
+        () => {
+
+          setZoom(
+            modeSelect.value ===
+            "escape"
+              ? autoFitEscapeZoom()
+              : 1
+          );
+        }
+      );
+
+
+    zoomSlider.addEventListener(
+      "input",
+      () => {
+
+        const t =
+          Number(
+            zoomSlider.value
+          ) / 100;
+
+        zoom =
+          MIN_ZOOM *
+          Math.pow(
+            MAX_ZOOM / MIN_ZOOM,
+            t
+          );
+      }
+    );
+
+
+    /*
+      마우스 휠 줌
+    */
 
     simulation.addEventListener(
       "wheel",
       (event) => {
+
         event.preventDefault();
 
         if (event.deltaY < 0) {
-          setZoom(zoom * 1.1);
+
+          setZoom(
+            zoom * 1.1
+          );
+
         } else {
-          setZoom(zoom / 1.1);
+
+          setZoom(
+            zoom / 1.1
+          );
         }
       },
-      { passive: false }
+      {
+        passive: false
+      }
     );
 
-    get("showFormula").addEventListener("click", () => {
-      const data = currentMode();
 
-      get("formulaTitle").textContent = data.name;
+    /*
+      공식 설명
+    */
 
-      get("formulaDescription").innerHTML =
-        `<h3>핵심 공식</h3>` +
-        `<pre>${data.formula}</pre>` +
-        `<h3>설명</h3>` +
-        `<p>${data.explanation}</p>`;
+    get("showFormula")
+      .addEventListener(
+        "click",
+        () => {
 
-      formulaModal.classList.remove("hidden");
-    });
+          const data =
+            currentMode();
 
-    get("closeFormula").addEventListener("click", () => {
-      formulaModal.classList.add("hidden");
-    });
+          get("formulaTitle")
+            .textContent =
+            data.name;
 
-    window.addEventListener("resize", () => {
-      resizeCanvas();
-      draw();
-    });
+          get("formulaDescription")
+            .innerHTML =
+
+              `<h3>핵심 공식</h3>` +
+
+              `<pre>${data.formula}</pre>` +
+
+```
+          `<h3>설명</h3>` +
+
+          `<p>${data.explanation}</p>`;
+
+      formulaModal
+        .classList
+        .remove("hidden");
+    }
+  );
+
+
+/*
+  공식 창 닫기
+*/
+
+get("closeFormula")
+  .addEventListener(
+    "click",
+    () => {
+
+      formulaModal
+        .classList
+        .add("hidden");
+    }
+  );
+
+
+/*
+  탈출 설정 변경
+*/
+
+[
+  planetGravityInput,
+  planetRadiusInput,
+  massInput,
+  speedInput,
+  angleInput,
+  useEscapeSpeedInput
+].forEach(
+  (element) => {
+
+    element.addEventListener(
+      "input",
+      () => {
+
+        if (
+          modeSelect.value ===
+          "escape"
+        ) {
+
+          if (
+            useEscapeSpeedInput.checked &&
+            (
+              element ===
+                planetGravityInput ||
+              element ===
+                planetRadiusInput
+            )
+          ) {
+
+            speedInput.value =
+              computeEscapeSpeed()
+                .toFixed(2);
+          }
+
+          resetSimulation();
+        }
+      }
+    );
+  }
+);
+
+
+escapeViewSelect.addEventListener(
+  "change",
+  () => {
+
+    updateCamera();
+
+    draw();
+  }
+);
+
+
+/*
+  화면 크기 변경
+*/
+
+window.addEventListener(
+  "resize",
+  () => {
 
     resizeCanvas();
-    updateModeInterface();
-    resetSimulation(true);
-    requestAnimationFrame(animate);
+
+    draw();
+  }
+);
+
+
+/*
+  애니메이션
+*/
+
+function animate(now) {
+
+  requestAnimationFrame(
+    animate
+  );
+
+  const deltaTime =
+    Math.min(
+      (now - previousTime) / 1000,
+      0.03
+    );
+
+  previousTime = now;
+
+  if (running) {
+
+    update(
+      deltaTime
+    );
+  }
+
+  draw();
+}
+
+
+/*
+  초기 실행
+*/
+
+resizeCanvas();
+
+updateModeInterface();
+
+resetSimulation(true);
+
+requestAnimationFrame(
+  animate
+);
+```
+
   </script>
+
 </body>
 </html>
