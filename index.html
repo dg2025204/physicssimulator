@@ -383,6 +383,7 @@
     }
 
     .mode-dialog {
+      position: relative;
       width: min(980px, 96vw);
       max-height: 92vh;
       padding: clamp(24px, 4vw, 42px);
@@ -390,6 +391,17 @@
       border: 1px solid rgb(255 255 255 / 15%);
       border-radius: 24px;
       background: linear-gradient(145deg, #172f4b, #091a2e 60%, #06111f);
+    }
+
+    .version-badge {
+      position: absolute;
+      top: 14px;
+      left: 18px;
+      color: rgb(255 255 255 / 25%);
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      pointer-events: none;
     }
 
     .mode-dialog h2 {
@@ -554,6 +566,8 @@
 <body>
   <div id="modeModal" class="modal">
     <section class="mode-dialog">
+      <span class="version-badge">v1.1</span>
+
       <h2>어떤 운동을 시뮬레이션할까요?</h2>
       <p>운동을 선택하면 초기 설정이 적용됩니다.</p>
 
