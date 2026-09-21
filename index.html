@@ -2356,15 +2356,40 @@ E < 0  → 탈출 불가`,
 
           if (mode === "escape") {
 
-            const energy =
-              computeEscapeMechanicalEnergy();
+            /*
+              탈출 여부는 "현재" 역학적 에너지가 아니라
+              시작 시점의 역학적 에너지(escapeInitialEnergy)로
+              판정합니다. 수치 적분 오차가 누적되어도
+              탈출/구속 여부 자체는 초기 조건에 의해서만
+              결정되기 때문입니다.
 
-            if (
-              escapeInitialEnergy !== null &&
+              설정값(행성 중력, 반지름, 질량, 속력, 각도)에 따라
+              아래 세 가지 결과가 모두 나올 수 있어야 합니다.
+
+                1) E > 0  : 탈출 성공  (v0 > v_escape)
+                2) E ≈ 0  : 최소 탈출 조건으로 탈출 (v0 = v_escape)
+                3) E < 0  : 탈출하지 못함 (v0 < v_escape) →
+                            화면 밖으로 나가더라도 결국 되돌아오므로
+                            "탈출"로 판정하지 않는다.
+            */
+
+            if (escapeInitialEnergy === null) {
+
+              // 초기 에너지가 아직 계산되지 않은 예외 상황.
+              running = false;
+
+              playPauseButton.textContent =
+                "▶ 재생";
+
+              message.textContent =
+                "물체가 화면 밖으로 이동해 일시정지했습니다. 화면을 축소하세요.";
+
+            } else if (
               escapeInitialEnergy >
               ENERGY_EPSILON
             ) {
 
+              // 1) E > 0 : 탈출 성공
               running = false;
 
               playPauseButton.textContent =
@@ -2372,6 +2397,37 @@ E < 0  → 탈출 불가`,
 
               message.textContent =
                 "E > 0 : 물체가 중력을 벗어나 탈출했습니다.";
+
+            } else if (
+              escapeInitialEnergy <
+              -ENERGY_EPSILON
+            ) {
+
+              // 3) E < 0 : 탈출 실패 (구속됨)
+              // 화면 밖으로 나갔더라도 탈출한 것이 아니라
+              // 타원 궤도의 먼 지점을 지나는 중이거나
+              // 잠시 뒤 다시 행성 쪽으로 떨어질 것이므로
+              // "탈출"로 표시하지 않고, 관찰을 위해 일시정지만 한다.
+              running = false;
+
+              playPauseButton.textContent =
+                "▶ 재생";
+
+              message.textContent =
+                "E < 0 : 물체가 탈출하지 못하고 화면 밖으로 벗어났습니다. 화면을 축소해 다시 확인하세요.";
+
+            } else {
+
+              // 2) E ≈ 0 : 최소 탈출 조건
+              // 속도가 0에 무한히 가까워지며 다시는 돌아오지 않으므로
+              // 탈출로 판정한다.
+              running = false;
+
+              playPauseButton.textContent =
+                "▶ 재생";
+
+              message.textContent =
+                "E ≈ 0 : 최소 탈출 조건으로 물체가 탈출했습니다.";
             }
 
           } else {
