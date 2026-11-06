@@ -1,0 +1,1999 @@
+<!doctype html>
+
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Physics Simulator</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #06101d;
+      --panel: #0c1929;
+      --panel2: #14263d;
+      --border: #2f4868;
+      --primary: #3bc8ff;
+      --text: #f7fbff;
+      --muted: #9fb1c5;
+      --yellow: #ffda3d;
+      --green: #43e6a1;
+      --red: #ff667a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-width: 320px;
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        Pretendard,
+        "Noto Sans KR",
+        Arial,
+        sans-serif;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+      cursor: pointer;
+    }
+
+    header {
+      min-height: 70px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      border-bottom: 1px solid var(--border);
+      background: #081523;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 13px;
+      background: linear-gradient(140deg, var(--primary), #5366ff);
+      font-size: 1.25rem;
+      font-weight: 900;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.08rem;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    .header-button,
+    .tool-button,
+    .action-button {
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--panel2);
+    }
+
+    .header-button {
+      min-height: 38px;
+      padding: 0 13px;
+    }
+
+    button:hover {
+      border-color: var(--primary);
+      background: #1b3858;
+    }
+
+    .app {
+      height: calc(100vh - 70px);
+      min-height: 650px;
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+    }
+
+    aside {
+      padding: 17px;
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      background: #091625;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 13px;
+    }
+
+    .panel-title h2 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    #modeBadge {
+      padding: 6px 9px;
+      border: 1px solid rgb(59 200 255 / 30%);
+      border-radius: 999px;
+      background: rgb(59 200 255 / 12%);
+      color: #83dfff;
+      font-size: 0.67rem;
+    }
+
+    .control-card {
+      margin-bottom: 9px;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+    }
+
+    .control-card h3 {
+      margin: 0 0 10px;
+      font-size: 0.82rem;
+    }
+
+    label {
+      margin-top: 9px;
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    input,
+    select {
+      width: 100%;
+      height: 38px;
+      padding: 0 9px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: 0;
+      background: #06121f;
+      color: var(--text);
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+    }
+
+    .input-unit {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #06121f;
+    }
+
+    .input-unit input {
+      min-width: 0;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .input-unit span {
+      padding-right: 8px;
+      color: #748a9f;
+      font-size: 0.61rem;
+      white-space: nowrap;
+    }
+
+    .two-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .check-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .check-label input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
+    }
+
+    .mode-settings {
+      display: none;
+    }
+
+    .mode-settings.active {
+      display: block;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    .action-button {
+      min-height: 41px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .primary {
+      border-color: #087fbe;
+      background: linear-gradient(135deg, #087fbe, #176fd0);
+    }
+
+    #message {
+      min-height: 37px;
+      margin: 9px 0 0;
+      padding: 9px;
+      border-radius: 8px;
+      background: rgb(255 255 255 / 4%);
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.67rem;
+      line-height: 1.45;
+    }
+
+    #energyStatus {
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      display: none;
+    }
+
+    #energyStatus.escape {
+      display: block;
+      color: #43e6a1;
+      background: rgb(67 230 161 / 10%);
+      border: 1px solid rgb(67 230 161 / 20%);
+    }
+
+    #energyStatus.bound {
+      display: block;
+      color: #ff667a;
+      background: rgb(255 102 122 / 10%);
+      border: 1px solid rgb(255 102 122 / 20%);
+    }
+
+    #energyStatus.minimum {
+      display: block;
+      color: #ffda3d;
+      background: rgb(255 218 61 / 10%);
+      border: 1px solid rgb(255 218 61 / 20%);
+    }
+
+    .simulation {
+      position: relative;
+      min-width: 0;
+      min-height: 650px;
+      overflow: hidden;
+      background: #020811;
+    }
+
+    #canvas {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .tools {
+      position: absolute;
+      z-index: 5;
+      top: 15px;
+      left: 50%;
+      padding: 5px;
+      display: flex;
+      gap: 5px;
+      transform: translateX(-50%);
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 11px;
+      background: rgb(7 19 34 / 84%);
+    }
+
+    .tool-button {
+      min-width: 37px;
+      height: 34px;
+      padding: 0 9px;
+    }
+
+    .tools input[type="range"] {
+      width: 110px;
+      height: 34px;
+      padding: 0;
+      accent-color: var(--primary);
+      background: transparent;
+      border: 0;
+    }
+
+    .overlay {
+      position: absolute;
+      z-index: 4;
+      top: 15px;
+      width: 270px;
+      max-height: calc(100% - 80px);
+      padding: 12px;
+      overflow-y: auto;
+      border: 1px solid rgb(255 255 255 / 12%);
+      border-radius: 12px;
+      background: rgb(5 14 27 / 80%);
+      backdrop-filter: blur(9px);
+    }
+
+    .formula-card {
+      left: 15px;
+      color: #ffe36c;
+    }
+
+    .info-card {
+      right: 15px;
+    }
+
+    .overlay-title {
+      margin-bottom: 9px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      color: white;
+      font-size: 0.7rem;
+    }
+
+    .overlay-title button {
+      min-height: 27px;
+      padding: 3px 7px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--panel2);
+      color: white;
+      font-size: 0.61rem;
+    }
+
+    #formulaText {
+      margin: 0;
+      white-space: pre-wrap;
+      font: 0.66rem/1.65 Consolas, monospace;
+    }
+
+    .physics-row {
+      padding: 4px 0;
+      display: grid;
+      grid-template-columns: minmax(70px, 1fr) auto;
+      gap: 8px;
+      border-bottom: 1px solid rgb(255 255 255 / 6%);
+      font-size: 0.65rem;
+    }
+
+    .physics-name {
+      color: #a8bacd;
+    }
+
+    .physics-value {
+      color: #71dcff;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .energy-positive {
+      color: var(--green) !important;
+    }
+
+    .energy-negative {
+      color: var(--red) !important;
+    }
+
+    .energy-zero {
+      color: var(--yellow) !important;
+    }
+
+    .escape-help {
+      margin-top: 9px;
+      padding: 9px;
+      border-radius: 8px;
+      background: rgb(59 200 255 / 7%);
+      color: var(--muted);
+      font-size: 0.64rem;
+      line-height: 1.55;
+    }
+
+    .escape-help strong {
+      color: #83dfff;
+    }
+
+    /* 운동 선택 모달 */
+
+    .modal {
+      position: fixed;
+      z-index: 999999;
+      inset: 0;
+      padding: 20px;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 10%, rgb(33 119 177 / 40%), transparent 45%),
+        rgb(2 8 18 / 96%);
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    .mode-dialog {
+      position: relative;
+      width: min(980px, 96vw);
+      max-height: 92vh;
+      padding: clamp(24px, 4vw, 42px);
+      overflow-y: auto;
+      border: 1px solid rgb(255 255 255 / 15%);
+      border-radius: 24px;
+      background: linear-gradient(145deg, #172f4b, #091a2e 60%, #06111f);
+    }
+
+    .version-badge {
+      position: absolute;
+      top: 14px;
+      left: 18px;
+      color: rgb(255 255 255 / 35%);
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      pointer-events: none;
+    }
+
+    .mode-dialog h2 {
+      margin: 7px 0 8px;
+      text-align: center;
+      font-size: clamp(1.6rem, 4vw, 2.5rem);
+    }
+
+    .mode-dialog > p {
+      margin: 0 0 25px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 13px;
+    }
+
+    .mode-button {
+      min-height: 145px;
+      padding: 20px 17px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 9px;
+      border: 1px solid #354e6f;
+      border-radius: 17px;
+      background: linear-gradient(145deg, #102944, #081a2e);
+      text-align: left;
+    }
+
+    .mode-button:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      background: #164569;
+    }
+
+    .mode-button span {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: rgb(59 200 255 / 13%);
+      color: var(--primary);
+      font-size: 1.4rem;
+    }
+
+    .mode-button small {
+      color: var(--muted);
+    }
+
+    /* 공식 설명 모달 */
+
+    .formula-dialog {
+      width: min(650px, 96vw);
+      max-height: 90vh;
+      padding: 22px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #0b192b;
+    }
+
+    .dialog-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .dialog-heading h2 {
+      margin: 0;
+    }
+
+    .close-button {
+      width: 37px;
+      height: 37px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--panel2);
+    }
+
+    #formulaDescription {
+      margin-top: 16px;
+      color: #d7e3f1;
+      line-height: 1.75;
+    }
+
+    #formulaDescription pre {
+      padding: 12px;
+      border-radius: 9px;
+      background: #06121f;
+      color: #ffe36c;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 850px) {
+      .app {
+        grid-template-columns: 300px minmax(0, 1fr);
+      }
+
+      .overlay {
+        width: 215px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      body {
+        overflow: auto;
+      }
+
+      .app {
+        height: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .simulation {
+        order: 1;
+        height: 62vh;
+        min-height: 500px;
+      }
+
+      aside {
+        order: 2;
+        overflow: visible;
+        border-top: 1px solid var(--border);
+        border-right: 0;
+      }
+
+      .overlay {
+        top: auto;
+        bottom: 8px;
+        width: calc(50% - 10px);
+        max-height: 180px;
+        padding: 8px;
+      }
+
+      .formula-card {
+        left: 5px;
+      }
+
+      .info-card {
+        right: 5px;
+      }
+
+      .mode-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .mode-button {
+        min-height: 120px;
+      }
+    }
+    input:disabled, select:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+    .model-note, .result-note {
+      color: var(--muted);
+      font-size: .68rem;
+      line-height: 1.65;
+      margin: 10px 0 0;
+      overflow-wrap: anywhere;
+    }
+    #landingResult { margin-top: 12px; border-color: #32735e; }
+    #landingResult[hidden] { display: none; }
+    #landingResult .physics-row { grid-template-columns: minmax(0,1fr) auto; }
+    .overlay { top: 65px; max-height: calc(100% - 90px); }
+    .formula-card { top: auto; bottom: 20px; max-height: 210px; }
+    .physics-name { overflow-wrap: anywhere; }
+    .physics-value { font-variant-numeric: tabular-nums; }
+    .orbit-presets { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .orbit-presets button { min-height: 40px; padding: 7px 4px; font-size: .66rem; }
+    #setCircularOrbit { border-color: #3d7496; color: #b7e6ff; }
+    .orbit-legend { color: var(--muted); font-size: .64rem; line-height: 1.9; }
+    .guide-swatch, .trail-swatch { display: inline-block; width: 22px; height: 0; margin-right: 6px; vertical-align: middle; }
+    .guide-swatch { border-top: 2px dashed rgba(125,211,252,.30); }
+    .trail-swatch { border-top: 2px solid rgba(255,159,37,.45); }
+    @media (max-width: 1100px) and (min-width: 701px) {
+      .overlay { width: 220px; }
+      .physics-row { font-size: .60rem; }
+    }
+    @media (max-width: 700px) {
+      .overlay { top: auto; bottom: 8px; width: calc(50% - 10px); max-height: 175px; }
+      .formula-card { bottom: 8px; }
+      .physics-row { display: block; padding: 5px 0; }
+      .physics-name, .physics-value { display: block; }
+      .physics-value { white-space: normal; overflow-wrap: anywhere; }
+      .tools { top: 10px; }
+      .tools input[type="range"] { width: 75px; }
+    }
+  </style>
+
+
+</head>
+
+<body>
+
+  <!-- 운동 선택 -->
+
+  <div id="modeModal" class="modal">
+    <section class="mode-dialog">
+      <span class="version-badge" data-version></span>
+
+
+  <h2>어떤 운동을 시뮬레이션할까요?</h2>
+  <p>운동을 선택하면 초기 설정이 적용됩니다.</p>
+
+  <div class="mode-grid">
+    <button class="mode-button" type="button" data-mode="projectile">
+      <span>↗</span>
+      <strong>포물선 운동</strong>
+      <small>발사 속도, 각도, 중력</small>
+    </button>
+
+    <button class="mode-button" type="button" data-mode="freefall">
+      <span>↓</span>
+      <strong>자유 낙하</strong>
+      <small>시작 높이와 중력가속도</small>
+    </button>
+
+    <button class="mode-button" type="button" data-mode="friction">
+      <span>▰</span>
+      <strong>마찰 운동</strong>
+      <small>수평면 마찰에 의한 감속</small>
+    </button>
+
+    <button class="mode-button" type="button" data-mode="circular">
+      <span>↻</span>
+      <strong>원운동</strong>
+      <small>수평면에서의 등속 원운동</small>
+    </button>
+
+    <button class="mode-button" type="button" data-mode="incline">
+      <span>◺</span>
+      <strong>빗면 운동</strong>
+      <small>경사각과 마찰에 의한 가속</small>
+    </button>
+
+    <button class="mode-button" type="button" data-mode="escape">
+      <span>🚀</span>
+      <strong>탈출 속도</strong>
+      <small>역학적 에너지로 탈출 여부 확인</small>
+    </button>
+  </div>
+</section>
+
+
+  </div>
+
+  <!-- 공식 설명 -->
+
+  <div id="formulaModal" class="modal hidden">
+    <section class="formula-dialog">
+      <div class="dialog-heading">
+        <h2 id="formulaTitle">공식 설명</h2>
+        <button id="closeFormula" class="close-button" type="button">×</button>
+      </div>
+
+
+  <div id="formulaDescription"></div>
+</section>
+
+
+  </div>
+
+  <header>
+    <div class="brand">
+      <div class="logo">P</div>
+      <div>
+        <h1>Physics Simulator</h1>
+        <p>인터랙티브 물리 실험실 · <span data-version></span></p>
+      </div>
+    </div>
+
+
+<button id="openMode" class="header-button" type="button">
+  운동 다시 선택
+</button>
+
+
+  </header>
+
+  <main class="app">
+
+
+<aside>
+
+  <div class="panel-title">
+    <h2>실험 설정</h2>
+    <span id="modeBadge">포물선 운동</span>
+  </div>
+
+  <!-- 운동과 환경 -->
+  <section class="control-card">
+    <h3>운동과 환경</h3>
+
+    <label>
+      운동 종류
+      <select id="mode">
+        <option value="projectile">포물선 운동</option>
+        <option value="freefall">자유 낙하</option>
+        <option value="friction">마찰 운동</option>
+        <option value="circular">원운동</option>
+        <option value="incline">빗면 운동</option>
+        <option value="escape">탈출 속도</option>
+      </select>
+    </label>
+
+    <label>
+      중력 환경
+      <select id="gravity">
+        <option value="9.8">지구 · 9.8 m·s⁻²</option>
+        <option value="1.62">달 · 1.62 m·s⁻²</option>
+        <option value="3.72">화성 · 3.72 m·s⁻²</option>
+        <option value="0">무중력 · 0 m·s⁻²</option>
+      </select>
+    </label>
+  </section>
+
+  <!-- 초기 조건 -->
+  <section class="control-card">
+    <h3>초기 조건</h3>
+
+    <div class="two-columns">
+
+      <label>
+        <span id="speedLabel">초기 속력 v₀</span>
+        <div class="input-unit">
+          <input id="speed" type="number" value="15" min="0" step="any">
+          <span>m·s⁻¹</span>
+        </div>
+      </label>
+
+      <label>
+        질량 m
+        <div class="input-unit">
+          <input id="mass" type="number" value="1" min="0.01" step="0.1">
+          <span>kg</span>
+        </div>
+      </label>
+
+    </div>
+
+    <label>
+      발사 각도 θ
+      <div class="input-unit">
+        <input id="angle" type="number" value="60" step="1">
+        <span>°</span>
+      </div>
+    </label>
+
+    <div class="two-columns">
+
+      <label>
+        추가 가속도 aₓ
+        <div class="input-unit">
+          <input id="accelerationX" type="number" value="0" step="0.1">
+          <span>m·s⁻²</span>
+        </div>
+      </label>
+
+      <label>
+        추가 가속도 aᵧ
+        <div class="input-unit">
+          <input id="accelerationY" type="number" value="0" step="0.1">
+          <span>m·s⁻²</span>
+        </div>
+      </label>
+
+    </div>
+  </section>
+
+  <!-- 모드별 설정 -->
+  <section class="control-card">
+    <h3>모드별 설정</h3>
+
+    <div id="projectileSettings" class="mode-settings">
+      <label class="check-label">
+        <input id="stopAfterLanding" type="checkbox" checked>
+        첫 착지에서 정지하고 기록
+      </label>
+      <p class="result-note">옵션을 끄면 반발계수 0.5로 튑니다. 첫 착지 기록은 유지됩니다.</p>
+    </div>
+
+    <div id="freefallSettings" class="mode-settings">
+
+      <label>
+        시작 높이 h₀
+        <div class="input-unit">
+          <input id="freefallHeight" type="number" value="25" min="0" step="1">
+          <span>m</span>
+        </div>
+      </label>
+
+    </div>
+
+    <div id="frictionSettings" class="mode-settings">
+
+      <label>
+        운동마찰계수 μₖ
+        <input id="frictionCoefficient" type="number" value="0.3" min="0" step="0.01">
+      </label>
+
+    </div>
+
+    <div id="circularSettings" class="mode-settings">
+
+      <label>
+        반지름 r
+        <div class="input-unit">
+          <input id="radius" type="number" value="10" min="0.1" step="0.5">
+          <span>m</span>
+        </div>
+      </label>
+
+      <label>
+        각속도 ω
+        <div class="input-unit">
+          <input id="angularVelocity" type="number" value="1" step="0.1">
+          <span>rad·s⁻¹</span>
+        </div>
+      </label>
+
+    </div>
+
+    <div id="inclineSettings" class="mode-settings">
+      <label>
+        빗면 시작 높이 h₀
+        <div class="input-unit">
+          <input id="inclineHeight" type="number" value="10" min="0.1" step="0.5">
+          <span>m</span>
+        </div>
+      </label>
+
+      <label>
+        경사각 φ
+        <div class="input-unit">
+          <input id="inclineAngle" type="number" value="30" min="0" max="89" step="1">
+          <span>°</span>
+        </div>
+      </label>
+
+      <label>
+        정지/운동마찰계수 μ
+        <input id="inclineFriction" type="number" value="0.2" min="0" step="0.01">
+      </label>
+
+    </div>
+
+    <div id="escapeSettings" class="mode-settings">
+      <div class="orbit-presets">
+        <button id="setCircularOrbit" class="action-button" type="button">위성 원궤도 설정</button>
+        <button id="setMinimumEscape" class="action-button" type="button">E=0 탈출 설정</button>
+      </div>
+      <p class="result-note">계속 도는 원궤도는 E&lt;0입니다. E=0은 최소 탈출 조건이며 궤도가 닫히지 않습니다.</p>
+      <label>
+        시작 고도 h₀ (표면 위)
+        <div class="input-unit">
+          <input id="escapeHeight" type="number" value="0" min="0" step="0.5">
+          <span>m</span>
+        </div>
+      </label>
+      <p class="result-note">원궤도 설정 시 고도가 0이면 0.25R로 올려 궤도선이 행성 테두리와 겹치지 않게 합니다.</p>
+      <label class="check-label">
+        <input id="showOrbitGuide" type="checkbox" checked>
+        예상 위성 궤도 표시 (반투명)
+      </label>
+      <p class="orbit-legend"><span class="guide-swatch"></span>하늘색: 예상 원·타원 궤도<br><span class="trail-swatch"></span>주황색: 실제 이동 경로</p>
+
+      <label>
+        표면 중력가속도 g₀
+        <div class="input-unit">
+          <input id="planetGravity" type="number" value="9.8" min="0.01" step="0.1">
+          <span>m·s⁻²</span>
+        </div>
+      </label>
+
+      <label>
+        천체 반지름 R
+        <div class="input-unit">
+          <input id="planetRadius" type="number" value="35" min="1" step="0.5">
+          <span>m</span>
+        </div>
+      </label>
+
+      <label class="check-label">
+        <input id="useEscapeSpeed" type="checkbox" checked>
+        계산된 탈출 속도로 발사
+      </label>
+
+      <label>
+        시점
+        <select id="escapeView">
+          <option value="planet">행성 고정 (물체가 움직입니다)</option>
+          <option value="object">물체 고정 (행성이 움직입니다)</option>
+        </select>
+      </label>
+
+      <div class="escape-help">
+        <strong>탈출 조건</strong><br>
+        E = K + U<br>
+        E &gt; 0 : 탈출 가능<br>
+        E = 0 : 최소 탈출 조건<br>
+        E &lt; 0 : 중력에 묶임<br>
+        표면과 충돌하지 않는 경우에 적용합니다.<br>
+        기본 천체는 반지름 35 m의 가상 천체입니다.
+      </div>
+
+    </div>
+
+<p id="modelNote" class="model-note"></p>
+  </section>
+
+  <!-- 에너지 상태 -->
+  <div id="energyStatus"></div>
+
+  <!-- 표시 설정 -->
+  <section class="control-card">
+    <h3>표시 설정</h3>
+
+    <label class="check-label">
+      <input id="showTrail" type="checkbox" checked>
+      운동 경로 표시
+    </label>
+  </section>
+
+  <!-- 버튼 -->
+  <div class="actions">
+
+    <button id="start" class="action-button primary" type="button">
+      ▶ 처음부터
+    </button>
+
+    <button id="playPause" class="action-button" type="button">
+      ▶ 재생
+    </button>
+
+    <button id="reset" class="action-button" type="button">
+      ↻ 초기화
+    </button>
+
+  </div>
+
+  <p id="message" role="status" aria-live="polite">
+    운동을 선택하고 실행해 주세요.
+  </p>
+
+  <section id="landingResult" class="control-card" hidden>
+    <h3>첫 착지 기록</h3>
+    <div id="landingInfo"></div>
+  </section>
+
+</aside>
+
+<!-- 시뮬레이션 -->
+<section id="simulation" class="simulation">
+
+<canvas id="canvas" aria-label="물체의 운동과 궤적을 표시하는 시뮬레이션"></canvas>
+
+  <div class="tools">
+
+    <button id="zoomOut" class="tool-button" type="button">
+      −
+    </button>
+
+    <input
+      id="zoomSlider"
+      type="range"
+      min="0"
+      max="100"
+      value="50"
+      step="0.1"
+    >
+
+    <button id="zoomIn" class="tool-button" type="button">
+      ＋
+    </button>
+
+    <button id="fitView" class="tool-button" type="button">
+      화면 맞춤
+    </button>
+
+  </div>
+
+  <div class="overlay formula-card">
+
+    <div class="overlay-title">
+      <strong>적용 공식</strong>
+
+      <button id="showFormula" type="button">
+        공식 설명
+      </button>
+    </div>
+
+    <pre id="formulaText"></pre>
+
+  </div>
+
+  <div class="overlay info-card">
+
+    <div class="overlay-title">
+      <strong>실시간 물리량</strong>
+    </div>
+
+    <div id="physicsInfo"></div>
+
+  </div>
+
+</section>
+
+
+  </main>
+
+<script>
+"use strict";
+
+// 버전을 변경할 때는 이 값만 수정하세요.
+const APP_VERSION = "1.5.2";
+const GROUND_Y = 0;
+const PHYSICS_STEP = 1 / 240;
+const EPS = 1e-10;
+const MIN_ZOOM = 1e-6;
+const MAX_ZOOM = 50;
+const RESTITUTION = 0.5;
+const ORBIT_GUIDE_COLOR = "rgba(125,211,252,0.30)";
+const ESCAPE_TRAIL_COLOR = "rgba(255,159,37,0.45)";
+
+const MODES = {
+  projectile: {
+    name: "포물선 운동", speed: 15, angle: 60,
+    formula: "x = x₀ + v₀cosθ·t + ½aₓt²\ny = v₀sinθ·t + ½(aᵧ−g)t²\naₓ=aᵧ=0일 때 R = v₀²sin(2θ)/g",
+    explanation: "공기저항을 무시하고 지면을 y=0으로 둡니다. 추가 가속도가 0이면 수평 속도는 일정하고 수직 방향에는 중력만 작용합니다. 첫 착지에서 정지하면 충돌 직전의 속도와 에너지를 보여 줍니다. 정지 옵션을 끄면 반발계수 0.5로 튀므로 충돌 때 역학적 에너지가 감소합니다. 사거리 공식은 추가 가속도가 0이고 출발·착지 높이가 같을 때 적용됩니다.",
+    note: "공기저항 없음 · 지면 y=0 m. 추가 가속도를 넣으면 외부 작용으로 역학적 에너지가 변할 수 있습니다."
+  },
+  freefall: {
+    name: "자유 낙하", speed: 0, angle: 270,
+    formula: "vᵧ = −v₀ − gt\nh = h₀ − v₀t − ½gt²\nv₀=0일 때 t = √(2h₀/g)",
+    explanation: "초기 속력은 아래 방향으로 적용됩니다. 시작 높이 h₀는 지면 y=0에서 잰 실제 높이입니다. 공기저항을 무시하므로 질량을 바꿔도 운동은 같습니다. 지면에 닿는 정확한 시각에서 충돌 직전 상태로 정지하여 속력과 역학적 에너지를 비교할 수 있습니다.",
+    note: "시작 높이는 지면에서 잽니다. 초기 속력은 아래 방향이며, 착지 직전 상태에서 정지합니다."
+  },
+  friction: {
+    name: "마찰 운동", speed: 15, angle: 0,
+    formula: "fₖ = μₖmg\naₓ = −μₖg·sgn(vₓ)\nt정지 = v₀/(μₖg)\nd정지 = v₀²/(2μₖg)  (μₖg>0)",
+    explanation: "수평면에서 오른쪽으로 미끄러지는 물체에 운동마찰만 작용하는 모형입니다. 중력과 수직항력은 상쇄되고, 운동마찰력은 속도 반대 방향입니다. 외부에서 미는 힘은 적용하지 않습니다. 정지하는 정확한 시각에서 멈추며, 정지 후 수평 알짜힘은 0입니다. 마찰로 줄어든 역학적 에너지도 따로 표시합니다.",
+    note: "수평면 · 외부에서 미는 힘 없음. 중력과 수직항력이 상쇄되며, 마찰로 운동에너지가 감소합니다."
+  },
+  circular: {
+    name: "원운동", speed: 10, angle: 0,
+    formula: "수평면 (x,z)에서의 등속 원운동\nv = r|ω|\na꜀ = rω² = v²/r\nF꜀ = mrω², U = 0 (일정)",
+    explanation: "위에서 내려다본 수평면의 등속 원운동입니다. 화면의 두 좌표는 x와 z이며 높이를 뜻하지 않습니다. 높이가 일정하므로 중력 위치에너지의 기준을 U=0으로 둡니다. 중력과 수직항력은 상쇄되고 중심을 향한 구심력이 속도의 방향을 바꿉니다. 속력과 역학적 에너지는 일정합니다.",
+    note: "수평면을 위에서 본 모습입니다. 화면 좌표는 (x,z)이며, 높이는 일정해 U=0으로 둡니다."
+  },
+  incline: {
+    name: "빗면 운동", speed: 0, angle: 0,
+    formula: "N = mg cosφ\n정지 유지: g sinφ ≤ μg cosφ\n미끄러짐: a = g(sinφ − μcosφ)\nU = mgh, 빗면 아래 h=0",
+    explanation: "물체는 설정한 높이의 빗면 꼭대기에서 정지 상태로 시작합니다. 정지마찰계수와 운동마찰계수를 같은 μ로 가정합니다. 중력의 빗면 방향 성분이 최대 정지마찰력 이하이면 움직이지 않습니다. 미끄러질 때는 중력 성분에서 운동마찰을 뺀 가속도를 적용합니다. 빗면 끝에서는 충돌이나 이후 수평 운동을 계산하기 전 상태로 정지합니다.",
+    note: "꼭대기에서 정지 상태로 시작합니다. 정지·운동마찰계수는 같다고 가정하며, 빗면 아래가 높이 0입니다."
+  },
+  escape: {
+    name: "탈출 속도", speed: 26.19, angle: 0,
+    formula: "GM = g₀R², r₀ = R + h₀\nv_원궤도 = √(GM/r₀)  (θ=0°)\nv_탈출 = √(2GM/r₀)\nE_원궤도 = −GMm/(2r₀) < 0\nE = 0: 최소 탈출 · 열린 궤도",
+    explanation: "대기와 추진력이 없는 구대칭 천체의 중심에서 거리 r₀=R+h₀인 위치에서 발사합니다. 기본 발사각은 0°로, 접선 방향입니다. ‘위성 원궤도 설정’은 같은 거리를 유지하며 계속 돌 수 있는 정확한 속력 √(GM/r₀)을 적용합니다. 이때 에너지는 음수입니다. 시작 고도가 0이면 궤도선이 행성 테두리와 겹치지 않도록 고도를 0.25R로 설정합니다. ‘E=0 탈출 설정’은 같은 위치에서 최소 탈출 속력 √(2GM/r₀)을 적용하며, 원을 계속 도는 운동이 아니라 열린 포물선 궤도입니다. 하늘색 반투명 선은 초기 조건에서 예측한, 행성과 충돌하지 않는 닫힌 원·타원 궤도입니다. 주황색 반투명 선은 실제로 지나온 경로입니다. 초기의 질량당 에너지로 탈출 조건을 판단합니다. E≥0이어도 표면을 향하면 충돌할 수 있으며, 화면 밖으로 나가는 것은 탈출의 판정 기준이 아닙니다.",
+    note: "기본 각도 0°는 접선 방향입니다. 위성 원궤도는 E<0, E=0은 닫히지 않는 최소 탈출 궤도입니다."
+  }
+};
+
+const get = id => document.getElementById(id);
+const modeModal = get("modeModal");
+const formulaModal = get("formulaModal");
+const modeSelect = get("mode");
+const modeBadge = get("modeBadge");
+const speedInput = get("speed");
+const massInput = get("mass");
+const angleInput = get("angle");
+const accelerationXInput = get("accelerationX");
+const accelerationYInput = get("accelerationY");
+const gravitySelect = get("gravity");
+const freefallHeightInput = get("freefallHeight");
+const frictionInput = get("frictionCoefficient");
+const radiusInput = get("radius");
+const angularVelocityInput = get("angularVelocity");
+const inclineAngleInput = get("inclineAngle");
+const inclineFrictionInput = get("inclineFriction");
+const inclineHeightInput = get("inclineHeight");
+const planetGravityInput = get("planetGravity");
+const planetRadiusInput = get("planetRadius");
+const escapeHeightInput = get("escapeHeight");
+const useEscapeSpeedInput = get("useEscapeSpeed");
+const escapeViewSelect = get("escapeView");
+const showOrbitGuideInput = get("showOrbitGuide");
+const stopAfterLandingInput = get("stopAfterLanding");
+const zoomSlider = get("zoomSlider");
+const showTrailInput = get("showTrail");
+const startButton = get("start");
+const playPauseButton = get("playPause");
+const resetButton = get("reset");
+const message = get("message");
+const energyStatus = get("energyStatus");
+const formulaText = get("formulaText");
+const physicsInfo = get("physicsInfo");
+const simulation = get("simulation");
+const canvas = get("canvas");
+const context = canvas.getContext("2d");
+
+let running = false;
+let finished = false;
+let elapsed = 0;
+let x = 0, y = 0;
+let velocityX = 0, velocityY = 0;
+let accelerationX = 0, accelerationY = 0;
+let circularAngle = 0;
+let inclineDistance = 0, inclineVelocity = 0;
+let trail = [];
+let trailClock = 0;
+let zoom = 1, cameraX = 0, cameraY = 0;
+let previousTime = performance.now();
+let accumulator = 0;
+let launchState = null;
+let firstLanding = null;
+let lastImpact = null;
+let initialMechanicalEnergy = 0;
+let frictionEnergyLoss = 0;
+let collisionEnergyLoss = 0;
+let escapeInitialEnergy = null;
+let escapeInitialSpecificEnergy = null;
+let escapeEnergyScale = 1;
+let escapeCollision = false;
+let orbitGuide = null;
+let pausedBeforeImpact = false;
+let grounded = false;
+let offscreenNotified = false;
+
+function numberValue(input, fallback = 0) {
+  if (String(input.value).trim() === "") return fallback;
+  const value = Number(input.value);
+  return Number.isFinite(value) ? value : fallback;
+}
+function currentMode() { return MODES[modeSelect.value]; }
+function massValue() { return Math.max(numberValue(massInput, 1), 0.01); }
+function gravityValue() { return Math.max(numberValue(gravitySelect, 9.8), 0); }
+function radiusValue() { return Math.max(numberValue(radiusInput, 10), 0.1); }
+function planetRadiusValue() { return Math.max(numberValue(planetRadiusInput, 35), 1); }
+function surfaceGravityValue() { return Math.max(numberValue(planetGravityInput, 9.8), 0.0001); }
+function gravitationalParameter() { return surfaceGravityValue() * planetRadiusValue() ** 2; }
+function escapeHeightValue() { return Math.max(numberValue(escapeHeightInput, 0), 0); }
+function escapeStartRadius() { return planetRadiusValue() + escapeHeightValue(); }
+function inclineAngleValue() { return Math.min(89, Math.max(0, numberValue(inclineAngleInput, 30))) * Math.PI / 180; }
+function inclineHeightValue() { return Math.max(numberValue(inclineHeightInput, 10), 0.1); }
+function inclineAccelerationValue() {
+  const phi = inclineAngleValue();
+  const mu = Math.max(numberValue(inclineFrictionInput, 0.2), 0);
+  return Math.max(0, gravityValue() * (Math.sin(phi) - mu * Math.cos(phi)));
+}
+function format(value, digits = 2) {
+  if (!Number.isFinite(value)) return "—";
+  if (Math.abs(value) >= 1e7) return value.toExponential(3);
+  return (Math.abs(value) < 0.5 * 10 ** -digits ? 0 : value).toFixed(digits);
+}
+
+function computeEscapeSpeed() {
+  return Math.sqrt(2 * gravitationalParameter() / escapeStartRadius());
+}
+function computeCircularOrbitSpeed() {
+  return Math.sqrt(gravitationalParameter() / escapeStartRadius());
+}
+function computeEscapePotentialEnergy() {
+  return -gravitationalParameter() * massValue() / Math.max(Math.hypot(x, y), 1e-12);
+}
+function computeEscapeSpecificEnergy() {
+  return 0.5 * (velocityX ** 2 + velocityY ** 2) - gravitationalParameter() / Math.max(Math.hypot(x, y), 1e-12);
+}
+function computeEscapeMechanicalEnergy() { return massValue() * computeEscapeSpecificEnergy(); }
+function computePotentialEnergy() {
+  if (modeSelect.value === "escape") return computeEscapePotentialEnergy();
+  if (modeSelect.value === "circular") return 0;
+  return massValue() * gravityValue() * (y - GROUND_Y);
+}
+function computeMechanicalEnergy() {
+  return 0.5 * massValue() * (velocityX ** 2 + velocityY ** 2) + computePotentialEnergy();
+}
+function getEscapeClassification() {
+  const specificEnergy = escapeInitialSpecificEnergy ?? computeEscapeSpecificEnergy();
+  // E≈0에서도 비교할 수 있고 물체 질량에 의존하지 않는 상대 허용오차.
+  const tolerance = 1e-9 * escapeEnergyScale;
+  if (specificEnergy > tolerance) return "escape";
+  if (specificEnergy < -tolerance) return "bound";
+  return "minimum";
+}
+function computeOrbitGuide() {
+  if (modeSelect.value !== "escape" || !launchState || getEscapeClassification() !== "bound") return null;
+  const mu = gravitationalParameter();
+  const r0 = Math.hypot(launchState.x, launchState.y);
+  const speed2 = launchState.vx ** 2 + launchState.vy ** 2;
+  const rv = launchState.x * launchState.vx + launchState.y * launchState.vy;
+  const angularMomentum = launchState.x * launchState.vy - launchState.y * launchState.vx;
+  if (Math.abs(angularMomentum) <= 1e-10 * Math.sqrt(mu * r0)) return null;
+  const energy = speed2 / 2 - mu / r0;
+  const ex = ((speed2 - mu / r0) * launchState.x - rv * launchState.vx) / mu;
+  const ey = ((speed2 - mu / r0) * launchState.y - rv * launchState.vy) / mu;
+  const eccentricity = Math.hypot(ex, ey);
+  if (!(energy < 0) || !(eccentricity < 1)) return null;
+  const p = angularMomentum ** 2 / mu;
+  const periapsis = p / (1 + eccentricity);
+  if (periapsis < planetRadiusValue() * (1 - 1e-9)) return null;
+  const semiMajor = -mu / (2 * energy);
+  const semiMinor = Math.sqrt(semiMajor * p);
+  const circular = eccentricity < 1e-8;
+  const rotation = circular ? Math.atan2(launchState.y, launchState.x) : Math.atan2(ey, ex);
+  const centerX = -semiMajor * ex;
+  const centerY = -semiMajor * ey;
+  const period = 2 * Math.PI * Math.sqrt(semiMajor ** 3 / mu);
+  if (![semiMajor, semiMinor, centerX, centerY, period].every(Number.isFinite)) return null;
+  return { kind: circular ? "circle" : "ellipse", eccentricity, periapsis,
+    apoapsis: semiMajor * (1 + eccentricity), semiMajor, semiMinor,
+    centerX, centerY, rotation, period };
+}
+function orbitDescription() {
+  if (escapeCollision) return "표면 충돌";
+  if (orbitGuide) return orbitGuide.kind === "circle" ? "위성 원궤도 · 반복 회전" : "위성 타원궤도 · 반복 회전";
+  if (getEscapeClassification() === "minimum") return "최소 탈출 · 열린 궤도";
+  if (getEscapeClassification() === "escape") return "탈출 가능한 열린 궤도";
+  return "표면과 만나거나 방사상인 궤도";
+}
+function applyEscapePreset(kind) {
+  if (modeSelect.value !== "escape" || !["circular", "escape"].includes(kind)) return;
+  angleInput.value = "0";
+  if (kind === "circular" && escapeHeightValue() === 0) escapeHeightInput.value = String(planetRadiusValue() * 0.25);
+  useEscapeSpeedInput.checked = kind === "escape";
+  speedInput.value = String(kind === "circular" ? computeCircularOrbitSpeed() : computeEscapeSpeed());
+  showOrbitGuideInput.checked = true;
+  showTrailInput.checked = true;
+  updateModeInterface();
+  resetSimulation(true);
+  message.textContent = kind === "circular" ?
+    "위성 원궤도를 설정했습니다. 재생을 누르면 반투명 궤도선을 따라 계속 회전합니다. 이 조건은 E<0입니다." :
+    "각도 0°의 E=0 최소 탈출 조건입니다. 재생하면 원으로 돌아오지 않고 열린 궤도로 진행합니다.";
+}
+function updateEnergyStatus() {
+  if (modeSelect.value !== "escape") {
+    energyStatus.className = "";
+    energyStatus.textContent = "";
+    return;
+  }
+  if (escapeCollision) {
+    energyStatus.className = "bound";
+    energyStatus.textContent = "표면에 도달 · 충돌 직전 상태";
+    return;
+  }
+  const classification = getEscapeClassification();
+  energyStatus.className = classification;
+  if (classification === "bound" && orbitGuide) {
+    energyStatus.textContent = `초기 E < 0 · ${orbitGuide.kind === "circle" ? "위성 원궤도" : "위성 타원궤도"}`;
+    return;
+  }
+  energyStatus.textContent = {
+    escape: "초기 E > 0 · 탈출 가능 (표면 충돌 제외)",
+    bound: "초기 E < 0 · 중력에 묶임",
+    minimum: "초기 E ≈ 0 · 최소 탈출 · 닫히지 않는 궤도"
+  }[classification];
+}
+
+function updateModeInterface() {
+  const mode = modeSelect.value;
+  modeBadge.textContent = currentMode().name;
+  formulaText.textContent = currentMode().formula;
+  get("modelNote").textContent = currentMode().note;
+  ["projectile", "freefall", "friction", "circular", "incline", "escape"].forEach(name => {
+    get(`${name}Settings`).classList.toggle("active", name === mode);
+  });
+  speedInput.disabled = mode === "circular" || mode === "incline" || (mode === "escape" && useEscapeSpeedInput.checked);
+  angleInput.disabled = mode !== "projectile" && mode !== "escape";
+  accelerationXInput.disabled = mode !== "projectile";
+  accelerationYInput.disabled = mode !== "projectile";
+  gravitySelect.disabled = mode === "escape" || mode === "circular";
+  get("speedLabel").textContent = mode === "freefall" ? "초기 속력 v₀ (아래 방향)" : "초기 속력 v₀";
+  updateEnergyStatus();
+}
+function selectMode(mode) {
+  if (!MODES[mode]) return;
+  modeSelect.value = mode;
+  speedInput.value = MODES[mode].speed;
+  angleInput.value = MODES[mode].angle;
+  updateModeInterface();
+  resetSimulation(true);
+  modeModal.classList.add("hidden");
+  message.textContent = `${currentMode().name} 모드입니다. 조건을 설정하고 실행하세요.`;
+}
+
+function setStopped(text) {
+  running = false;
+  finished = true;
+  accumulator = 0;
+  playPauseButton.textContent = "↻ 다시 재생";
+  message.textContent = text;
+}
+function resetSimulation(resetZoom = false) {
+  running = false;
+  finished = false;
+  elapsed = 0;
+  accumulator = 0;
+  previousTime = performance.now();
+  firstLanding = null;
+  lastImpact = null;
+  escapeCollision = false;
+  orbitGuide = null;
+  pausedBeforeImpact = false;
+  escapeInitialEnergy = null;
+  escapeInitialSpecificEnergy = null;
+  frictionEnergyLoss = 0;
+  collisionEnergyLoss = 0;
+  grounded = false;
+  offscreenNotified = false;
+  circularAngle = 0;
+  inclineDistance = 0;
+  inclineVelocity = 0;
+  trailClock = 0;
+  const mode = modeSelect.value;
+  const speed = Math.max(numberValue(speedInput, 0), 0);
+  const angle = numberValue(angleInput, 0) * Math.PI / 180;
+  x = -20;
+  y = GROUND_Y;
+  velocityX = speed * Math.cos(angle);
+  velocityY = speed * Math.sin(angle);
+  accelerationX = numberValue(accelerationXInput);
+  accelerationY = numberValue(accelerationYInput) - gravityValue();
+
+  if (mode === "freefall") {
+    x = 0;
+    y = Math.max(numberValue(freefallHeightInput, 25), 0);
+    velocityX = 0;
+    velocityY = -speed;
+    accelerationX = 0;
+    accelerationY = -gravityValue();
+  } else if (mode === "friction") {
+    velocityX = speed;
+    velocityY = 0;
+    accelerationX = speed > 0 ? -Math.max(numberValue(frictionInput, 0.3), 0) * gravityValue() : 0;
+    accelerationY = 0;
+  } else if (mode === "circular") {
+    const radius = radiusValue();
+    const omega = numberValue(angularVelocityInput, 1);
+    x = radius;
+    y = 0;
+    velocityX = 0;
+    velocityY = radius * omega;
+    accelerationX = -radius * omega ** 2;
+    accelerationY = 0;
+  } else if (mode === "incline") {
+    const phi = inclineAngleValue();
+    const a = inclineAccelerationValue();
+    x = 0;
+    y = inclineHeightValue();
+    velocityX = 0;
+    velocityY = 0;
+    accelerationX = a * Math.cos(phi);
+    accelerationY = -a * Math.sin(phi);
+  } else if (mode === "escape") {
+    x = 0;
+    y = escapeStartRadius();
+    const launchSpeed = useEscapeSpeedInput.checked ? computeEscapeSpeed() : speed;
+    // 표시용 반올림 값을 계산에 되돌려 사용하지 않습니다.
+    if (useEscapeSpeedInput.checked) speedInput.value = String(launchSpeed);
+    velocityX = launchSpeed * Math.cos(angle);
+    velocityY = launchSpeed * Math.sin(angle);
+    accelerationX = 0;
+    accelerationY = -gravitationalParameter() / y ** 2;
+    escapeEnergyScale = Math.max(0.5 * launchSpeed ** 2, gravitationalParameter() / y, 1e-12);
+    escapeInitialSpecificEnergy = computeEscapeSpecificEnergy();
+    escapeInitialEnergy = massValue() * escapeInitialSpecificEnergy;
+  }
+  if (Math.abs(velocityX) < 1e-12 * Math.max(Math.hypot(velocityX, velocityY), 1)) velocityX = 0;
+  if (Math.abs(velocityY) < 1e-12 * Math.max(Math.hypot(velocityX, velocityY), 1)) velocityY = 0;
+  launchState = { x, y, vx: velocityX, vy: velocityY, ax: accelerationX, ay: accelerationY };
+  orbitGuide = computeOrbitGuide();
+  initialMechanicalEnergy = computeMechanicalEnergy();
+  trail = [{ x, y, t: 0 }];
+  playPauseButton.textContent = "▶ 재생";
+  get("landingResult").hidden = true;
+  get("landingInfo").innerHTML = "";
+  if (resetZoom) fitView();
+  updateCamera();
+  updatePhysicsInfo();
+  draw();
+}
+
+// 등가속도 운동에서 지면으로 내려오는 최초 시각을 구합니다.
+function contactTime(height, velocity, acceleration, boundary, maxTime) {
+  const d = height - boundary;
+  if (d <= EPS && (velocity < -EPS || (Math.abs(velocity) <= EPS && acceleration <= 0))) return 0;
+  let roots = [];
+  if (Math.abs(acceleration) < 1e-14) {
+    if (velocity < 0) roots = [-d / velocity];
+  } else {
+    const discriminant = velocity ** 2 - 2 * acceleration * d;
+    if (discriminant >= 0) {
+      const sqrtD = Math.sqrt(discriminant);
+      const q = -0.5 * (velocity + (velocity >= 0 ? sqrtD : -sqrtD));
+      if (q !== 0) roots = [q / (0.5 * acceleration), d / q];
+      else roots = [0];
+    }
+  }
+  return roots.filter(t => t > EPS && t <= maxTime + EPS && velocity + acceleration * t <= EPS)
+    .reduce((best, t) => Math.min(best, Math.max(0, Math.min(maxTime, t))), Infinity);
+}
+function recordFirstLanding() {
+  if (firstLanding) return;
+  const range = Math.abs(x - launchState.x);
+  const ordinary = gravityValue() > 0 && Math.abs(launchState.ax) < EPS &&
+    Math.abs(launchState.ay + gravityValue()) < EPS && launchState.vy > EPS;
+  const theoreticalTime = ordinary ? 2 * launchState.vy / gravityValue() : null;
+  const theoreticalRange = ordinary ? Math.abs(launchState.vx * theoreticalTime) : null;
+  firstLanding = {
+    time: elapsed, x, range, vx: velocityX, vy: velocityY,
+    impactSpeed: Math.hypot(velocityX, velocityY),
+    theoreticalTime, theoreticalRange,
+    relativeError: theoreticalRange > EPS ? Math.abs(range - theoreticalRange) / theoreticalRange : null
+  };
+  get("landingResult").hidden = false;
+  get("landingInfo").innerHTML = row("첫 착지 시간", `${format(elapsed, 4)} s`) +
+    row("수평 도달 거리", `${format(range, 4)} m`) +
+    row("착지 직전 속력", `${format(firstLanding.impactSpeed, 4)} m·s⁻¹`) +
+    (ordinary ? row("이론 도달 거리", `${format(theoreticalRange, 4)} m`) +
+      row("거리 상대 오차", firstLanding.relativeError === null ? "—" : `${format(firstLanding.relativeError * 100, 6)} %`) :
+      '<p class="result-note">이론 사거리 비교는 중력이 있고, 위로 발사하며, 추가 가속도가 0일 때 표시합니다.</p>');
+}
+function stepBallistic(dt) {
+  let remaining = dt;
+  for (let contacts = 0; remaining > 1e-12 && !finished && contacts < 64; contacts++) {
+    if (grounded) {
+      x += velocityX * remaining + 0.5 * accelerationX * remaining ** 2;
+      velocityX += accelerationX * remaining;
+      y = GROUND_Y;
+      velocityY = 0;
+      accelerationY = 0;
+      elapsed += remaining;
+      return;
+    }
+    const hitTime = contactTime(y, velocityY, accelerationY, GROUND_Y, remaining);
+    const step = Number.isFinite(hitTime) ? hitTime : remaining;
+    x += velocityX * step + 0.5 * accelerationX * step ** 2;
+    y += velocityY * step + 0.5 * accelerationY * step ** 2;
+    velocityX += accelerationX * step;
+    velocityY += accelerationY * step;
+    elapsed += step;
+    remaining -= step;
+    if (!Number.isFinite(hitTime)) return;
+    y = GROUND_Y;
+    lastImpact = { time: elapsed, speed: Math.hypot(velocityX, velocityY), vx: velocityX, vy: velocityY };
+    if (modeSelect.value === "projectile") recordFirstLanding();
+    if (modeSelect.value === "freefall" || stopAfterLandingInput.checked) {
+      pausedBeforeImpact = true;
+      setStopped(modeSelect.value === "freefall" ? "지면에 도달했습니다. 충돌 직전의 속도와 에너지를 표시합니다." : "첫 착지를 기록했습니다. 충돌 직전 상태에서 정지했습니다.");
+      return;
+    }
+    const incomingVy = velocityY;
+    velocityY = Math.max(0, -RESTITUTION * incomingVy);
+    if (velocityY < 0.05 && accelerationY <= 0) {
+      velocityY = 0;
+      grounded = true;
+      accelerationY = 0;
+    }
+    collisionEnergyLoss += 0.5 * massValue() * (incomingVy ** 2 - velocityY ** 2);
+    if (grounded && Math.abs(velocityX) < EPS && Math.abs(accelerationX) < EPS) {
+      setStopped("물체가 지면에서 정지했습니다. 첫 착지 기록은 유지됩니다.");
+    }
+  }
+}
+function stepFriction(dt) {
+  const deceleration = Math.max(numberValue(frictionInput, 0.3), 0) * gravityValue();
+  if (Math.abs(velocityX) <= EPS) {
+    velocityX = 0;
+    accelerationX = 0;
+    setStopped("물체가 정지했습니다. 수평 알짜힘은 0입니다.");
+    return;
+  }
+  accelerationX = -Math.sign(velocityX) * deceleration;
+  const stopTime = deceleration > 0 ? Math.abs(velocityX) / deceleration : Infinity;
+  const step = Math.min(dt, stopTime);
+  const dx = velocityX * step + 0.5 * accelerationX * step ** 2;
+  x += dx;
+  velocityX += accelerationX * step;
+  elapsed += step;
+  frictionEnergyLoss += massValue() * deceleration * Math.abs(dx);
+  if (stopTime <= dt + EPS) {
+    velocityX = 0;
+    accelerationX = 0;
+    setStopped("마찰력으로 정지했습니다. 정확한 정지 시각과 위치를 표시합니다.");
+  }
+}
+function stepCircular(dt) {
+  const radius = radiusValue();
+  const omega = numberValue(angularVelocityInput, 1);
+  circularAngle = (circularAngle + omega * dt) % (2 * Math.PI);
+  x = radius * Math.cos(circularAngle);
+  y = radius * Math.sin(circularAngle);
+  velocityX = -radius * omega * Math.sin(circularAngle);
+  velocityY = radius * omega * Math.cos(circularAngle);
+  accelerationX = -(omega ** 2) * x;
+  accelerationY = -(omega ** 2) * y;
+  elapsed += dt;
+}
+function stepIncline(dt) {
+  const phi = inclineAngleValue();
+  const a = inclineAccelerationValue();
+  if (a <= EPS && inclineVelocity <= EPS) {
+    accelerationX = 0;
+    accelerationY = 0;
+    setStopped(gravityValue() === 0 ? "중력이 없어 정지 상태를 유지합니다." : "빗면 방향의 힘이 균형을 이루어 정지 상태를 유지합니다.");
+    return;
+  }
+  const endDistance = Math.sin(phi) > EPS ? inclineHeightValue() / Math.sin(phi) : Infinity;
+  const distanceLeft = Math.max(0, endDistance - inclineDistance);
+  const speedAtEnd = Math.sqrt(inclineVelocity ** 2 + 2 * a * distanceLeft);
+  const endTime = Number.isFinite(distanceLeft) ? 2 * distanceLeft / (inclineVelocity + speedAtEnd) : Infinity;
+  const step = Math.min(dt, endTime);
+  const distance = inclineVelocity * step + 0.5 * a * step ** 2;
+  inclineDistance += distance;
+  inclineVelocity += a * step;
+  elapsed += step;
+  frictionEnergyLoss += massValue() * Math.max(numberValue(inclineFrictionInput, 0.2), 0) * gravityValue() * Math.cos(phi) * distance;
+  x = inclineDistance * Math.cos(phi);
+  y = inclineHeightValue() - inclineDistance * Math.sin(phi);
+  velocityX = inclineVelocity * Math.cos(phi);
+  velocityY = -inclineVelocity * Math.sin(phi);
+  accelerationX = a * Math.cos(phi);
+  accelerationY = -a * Math.sin(phi);
+  if (endTime <= dt + EPS) {
+    inclineDistance = endDistance;
+    x = endDistance * Math.cos(phi);
+    y = GROUND_Y;
+    setStopped("빗면 끝에 도달했습니다. 끝에 도달한 순간의 속도와 에너지를 표시합니다.");
+  }
+}
+function escapeAcceleration(px, py) {
+  const r = Math.max(Math.hypot(px, py), 1e-12);
+  const factor = -gravitationalParameter() / r ** 3;
+  return { ax: factor * px, ay: factor * py };
+}
+function stepEscape(dt) {
+  const startX = x, startY = y, startVx = velocityX, startVy = velocityY;
+  const old = escapeAcceleration(x, y);
+  const positionAt = time => ({ x: startX + startVx * time + 0.5 * old.ax * time ** 2,
+    y: startY + startVy * time + 0.5 * old.ay * time ** 2 });
+  let step = dt;
+  let next = positionAt(step);
+  const radius = planetRadiusValue();
+  const r0 = Math.hypot(x, y);
+  const radialVelocity = (x * velocityX + y * velocityY) / r0;
+  const surfaceTolerance = 1e-9 * radius;
+  const circularSpeed = Math.sqrt(gravitationalParameter() / r0);
+  const radialAcceleration = (velocityX ** 2 + velocityY ** 2 - radialVelocity ** 2) / r0 - gravitationalParameter() / r0 ** 2;
+  // 출발 순간의 안쪽 발사와 실제 표면 침범을 구분합니다.
+  // 이상적인 표면 원궤도를 작은 적분 오차 때문에 충돌로 오판하지 않습니다.
+  const startsOnSurface = elapsed === 0 && Math.abs(r0 - radius) <= surfaceTolerance;
+  let collision = startsOnSurface && (radialVelocity < -1e-12 * circularSpeed ||
+    (Math.abs(radialVelocity) <= 1e-12 * circularSpeed && radialAcceleration < -1e-12 * surfaceGravityValue()));
+  if (collision) {
+    step = 0;
+    next = { x, y };
+  } else if (Math.hypot(next.x, next.y) < radius - surfaceTolerance) {
+    let lower = 0, upper = dt;
+    for (let i = 0; i < 50; i++) {
+      const middle = (lower + upper) / 2;
+      const point = positionAt(middle);
+      if (Math.hypot(point.x, point.y) >= radius) lower = middle;
+      else upper = middle;
+    }
+    step = (lower + upper) / 2;
+    next = positionAt(step);
+    collision = true;
+  }
+  x = next.x;
+  y = next.y;
+  if (collision) {
+    const scale = radius / Math.hypot(x, y);
+    x *= scale;
+    y *= scale;
+  }
+  const nextAcceleration = escapeAcceleration(x, y);
+  velocityX = startVx + 0.5 * (old.ax + nextAcceleration.ax) * step;
+  velocityY = startVy + 0.5 * (old.ay + nextAcceleration.ay) * step;
+  accelerationX = nextAcceleration.ax;
+  accelerationY = nextAcceleration.ay;
+  elapsed += step;
+  if (collision) {
+    escapeCollision = true;
+    pausedBeforeImpact = true;
+    lastImpact = { time: elapsed, speed: Math.hypot(velocityX, velocityY), vx: velocityX, vy: velocityY };
+    setStopped("행성 표면에 도달했습니다. 초기 에너지의 부호와 관계없이 표면 충돌은 가능합니다. 충돌 직전 상태를 표시합니다.");
+  }
+}
+
+function update(deltaTime, refresh = true) {
+  if (!Number.isFinite(deltaTime) || deltaTime <= 0 || finished) return;
+  const startTime = elapsed;
+  const mode = modeSelect.value;
+  if (mode === "circular") stepCircular(deltaTime);
+  else if (mode === "incline") stepIncline(deltaTime);
+  else if (mode === "friction") stepFriction(deltaTime);
+  else if (mode === "escape") {
+    let remaining = deltaTime;
+    let substeps = 0;
+    while (remaining > 1e-12 && !finished) {
+      // 중심력장은 Velocity Verlet 적분을 사용합니다.
+      const r = Math.hypot(x, y);
+      const localTime = Math.sqrt(r ** 3 / gravitationalParameter());
+      const crossingTime = r / Math.max(Math.hypot(velocityX, velocityY), 1e-12);
+      const step = Math.min(remaining, PHYSICS_STEP, 0.02 * localTime, 0.02 * crossingTime);
+      if (!Number.isFinite(step) || step <= 1e-15 || substeps++ >= 4096) {
+        setStopped("입력값의 규모가 계산 범위를 벗어났습니다. 중력·반지름·속력을 조정한 뒤 다시 실행하세요.");
+        break;
+      }
+      stepEscape(step);
+      remaining -= step;
+    }
+  } else stepBallistic(deltaTime);
+  trailClock += elapsed - startTime;
+  if (showTrailInput.checked && (trailClock >= 1 / 60 || finished)) {
+    trail.push({ x, y, t: elapsed });
+    // 반복 공전의 경로를 여러 겹 쌓지 않고 최근 한 주기만 유지합니다.
+    if (mode === "escape" && orbitGuide) {
+      const cutoff = elapsed - orbitGuide.period;
+      while (trail.length > 2 && trail[1].t < cutoff) trail.shift();
+    }
+    if (trail.length > 6000) trail.shift();
+    trailClock = 0;
+  }
+  updateCamera();
+  if (!finished && !offscreenNotified && !(mode === "escape" && escapeViewSelect.value === "object")) {
+    const p = worldToScreen(x, y);
+    if (p.x < -60 || p.y < -60 || p.x > simulation.clientWidth + 60 || p.y > simulation.clientHeight + 60) {
+      offscreenNotified = true;
+      message.textContent = "계산은 계속됩니다. 물체를 보려면 화면 맞춤이나 축소를 사용하세요.";
+    }
+  }
+  if (refresh) updatePhysicsInfo();
+}
+
+function row(name, value, className = "") {
+  return `<div class="physics-row"><span class="physics-name">${name}</span><span class="physics-value ${className}">${value}</span></div>`;
+}
+function updatePhysicsInfo() {
+  const mode = modeSelect.value;
+  const speed = Math.hypot(velocityX, velocityY);
+  const mass = massValue();
+  const potential = computePotentialEnergy();
+  const energy = computeMechanicalEnergy();
+  const plane = mode === "circular" ? " (x,z)" : "";
+  let info = row("시간 t", `${format(elapsed, 3)} s`) +
+    row(`위치 r⃗${plane}`, `(${format(x)}, ${format(y)}) m`) +
+    row("속도 v⃗", `(${format(velocityX)}, ${format(velocityY)}) m·s⁻¹`) +
+    row("속력 |v⃗|", `${format(speed)} m·s⁻¹`) +
+    row("가속도 a⃗", `(${format(accelerationX)}, ${format(accelerationY)}) m·s⁻²`) +
+    row("알짜힘 F⃗", `(${format(mass * accelerationX)}, ${format(mass * accelerationY)}) N`) +
+    row("운동에너지 K", `${format(0.5 * mass * speed ** 2)} J`) +
+    row("위치에너지 U", `${format(potential)} J`) +
+    row("역학적 에너지 E", `${format(energy)} J`) +
+    row("초기 에너지 E₀", `${format(initialMechanicalEnergy)} J`);
+  if (mode === "friction" || mode === "incline") {
+    info += row("마찰로 전환된 에너지", `${format(frictionEnergyLoss)} J`);
+  }
+  if (mode === "projectile" && collisionEnergyLoss > 0) {
+    info += row("충돌로 전환된 에너지", `${format(collisionEnergyLoss)} J`);
+  }
+  if (mode === "escape") {
+    const energyError = (computeEscapeSpecificEnergy() - escapeInitialSpecificEnergy) / escapeEnergyScale * 100;
+    info += row("시작 고도", `${format(escapeHeightValue())} m`) +
+      row("현재 궤도", orbitDescription()) +
+      row("시작 위치의 원궤도 속력", `${format(computeCircularOrbitSpeed(), 4)} m·s⁻¹`) +
+      row("시작 위치의 탈출 속력", `${format(computeEscapeSpeed(), 4)} m·s⁻¹`) +
+      (orbitGuide ? row("예상 공전 주기", `${format(orbitGuide.period, 3)} s`) : "") +
+      row("초기 규모 대비 에너지 오차", `${format(energyError, 6)} %`);
+  }
+  if (finished && pausedBeforeImpact) info += '<p class="result-note">충돌 직전 상태입니다. 충돌 이후의 운동은 포함하지 않습니다.</p>';
+  physicsInfo.innerHTML = info;
+  updateEnergyStatus();
+}
+
+function resizeCanvas() {
+  const rect = simulation.getBoundingClientRect();
+  const ratio = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.max(1, Math.round(rect.width * ratio));
+  canvas.height = Math.max(1, Math.round(rect.height * ratio));
+  canvas.style.width = `${rect.width}px`;
+  canvas.style.height = `${rect.height}px`;
+  context.setTransform(ratio, 0, 0, ratio, 0, 0);
+}
+function baseScale() { return Math.max(5, simulation.clientWidth / 80); }
+function setZoom(nextZoom) {
+  zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, nextZoom));
+  zoomSlider.value = (100 * Math.log(zoom / MIN_ZOOM) / Math.log(MAX_ZOOM / MIN_ZOOM)).toFixed(2);
+}
+function updateCamera() {
+  if (modeSelect.value === "escape" && escapeViewSelect.value === "object") {
+    cameraX = x;
+    cameraY = y;
+  } else { cameraX = 0; cameraY = 0; }
+}
+function autoFitEscapeZoom() {
+  return Math.min(simulation.clientWidth, simulation.clientHeight) * 0.30 / (planetRadiusValue() * baseScale());
+}
+function fitView() {
+  const mode = modeSelect.value;
+  updateCamera();
+  let minX = 0, maxX = 0, minY = 0, maxY = 0;
+  const include = (px, py) => { minX = Math.min(minX, px - cameraX); maxX = Math.max(maxX, px - cameraX);
+    minY = Math.min(minY, py - cameraY); maxY = Math.max(maxY, py - cameraY); };
+  include(x, y);
+  for (const p of trail) include(p.x, p.y);
+  if (mode === "escape") {
+    const radius = planetRadiusValue();
+    include(-radius, -radius); include(radius, radius);
+    if (orbitGuide && showOrbitGuideInput.checked) {
+      const guide = orbitGuide;
+      const rx = Math.hypot(guide.semiMajor * Math.cos(guide.rotation), guide.semiMinor * Math.sin(guide.rotation));
+      const ry = Math.hypot(guide.semiMajor * Math.sin(guide.rotation), guide.semiMinor * Math.cos(guide.rotation));
+      include(guide.centerX - rx, guide.centerY - ry);
+      include(guide.centerX + rx, guide.centerY + ry);
+    }
+  } else if (mode === "circular") {
+    include(-radiusValue(), -radiusValue()); include(radiusValue(), radiusValue());
+  } else if (mode === "incline") {
+    const phi = inclineAngleValue();
+    include(0, inclineHeightValue());
+    if (phi > 0.02) include(inclineHeightValue() / Math.tan(phi), 0);
+  }
+  const width = simulation.clientWidth, height = simulation.clientHeight;
+  const anchor = mode === "escape" || mode === "circular" ? 0.5 : 0.76;
+  const horizontal = width * 0.40 / Math.max(Math.abs(minX), Math.abs(maxX), 10);
+  const top = height * (anchor - 0.12) / Math.max(maxY, 5);
+  const bottom = height * (1 - anchor - 0.05) / Math.max(-minY, 1);
+  setZoom(Math.min(horizontal, top, bottom) / baseScale());
+  offscreenNotified = false;
+}
+function worldToScreen(worldX, worldY) {
+  const mode = modeSelect.value;
+  const anchor = mode === "escape" || mode === "circular" ? 0.5 : 0.76;
+  return { x: simulation.clientWidth / 2 + (worldX - cameraX) * baseScale() * zoom,
+    y: simulation.clientHeight * anchor - (worldY - cameraY) * baseScale() * zoom };
+}
+function drawBall(screenX, screenY, radius) {
+  context.beginPath();
+  context.arc(screenX, screenY, radius, 0, 2 * Math.PI);
+  context.fillStyle = "#ffda3d";
+  context.fill();
+  context.lineWidth = 2;
+  context.strokeStyle = "#ffffff";
+  context.stroke();
+}
+function drawOrbitGuide() {
+  if (modeSelect.value !== "escape" || !orbitGuide || !showOrbitGuideInput.checked) return;
+  const guide = orbitGuide;
+  const center = worldToScreen(guide.centerX, guide.centerY);
+  const scale = baseScale() * zoom;
+  context.save();
+  context.beginPath();
+  context.ellipse(center.x, center.y, guide.semiMajor * scale, guide.semiMinor * scale, -guide.rotation, 0, 2 * Math.PI);
+  context.strokeStyle = ORBIT_GUIDE_COLOR;
+  context.lineWidth = 2;
+  context.setLineDash([6, 5]);
+  context.stroke();
+  context.restore();
+}
+function draw() {
+  const width = simulation.clientWidth, height = simulation.clientHeight;
+  const mode = modeSelect.value;
+  updateCamera();
+  context.clearRect(0, 0, width, height);
+  const background = context.createLinearGradient(0, 0, 0, height);
+  background.addColorStop(0, "#0a1d35");
+  background.addColorStop(1, "#020811");
+  context.fillStyle = background;
+  context.fillRect(0, 0, width, height);
+  context.font = "12px Arial, sans-serif";
+  if (!["circular", "incline", "escape"].includes(mode)) {
+    const floor = worldToScreen(0, GROUND_Y);
+    context.fillStyle = "#485664";
+    context.fillRect(0, floor.y + 5, width, Math.max(0, height - floor.y - 5));
+    context.strokeStyle = "#91a4b7";
+    context.beginPath(); context.moveTo(0, floor.y); context.lineTo(width, floor.y); context.stroke();
+    context.fillStyle = "#a8bacd";
+    context.fillText("지면 · y = 0 m", 15, Math.min(height - 15, floor.y + 24));
+  }
+  if (mode === "circular") {
+    const center = worldToScreen(0, 0);
+    context.beginPath();
+    context.arc(center.x, center.y, radiusValue() * baseScale() * zoom, 0, 2 * Math.PI);
+    context.strokeStyle = "#4f9cd6"; context.lineWidth = 1.5; context.stroke();
+    context.fillStyle = "#7f9bb5";
+    context.fillText("수평면 (x,z) · 높이 일정", 15, height - 20);
+  }
+  if (mode === "incline") {
+    const phi = inclineAngleValue();
+    const rampHeight = inclineHeightValue();
+    const rampWidth = phi > 0.001 ? rampHeight / Math.tan(phi) : 50;
+    const top = worldToScreen(0, rampHeight), bottom = worldToScreen(0, 0), right = worldToScreen(rampWidth, 0);
+    context.beginPath(); context.moveTo(top.x, top.y);
+    if (phi <= 0.001) { const end = worldToScreen(rampWidth, rampHeight); context.lineTo(end.x, end.y); }
+    else { context.lineTo(bottom.x, bottom.y); context.lineTo(right.x, right.y); context.closePath(); }
+    context.fillStyle = "rgba(94,104,115,.85)"; context.fill();
+    context.strokeStyle = "#91a4b7"; context.lineWidth = 2; context.stroke();
+    context.fillStyle = "#a8bacd"; context.fillText("빗면 아래 · h = 0 m", 15, height - 20);
+  }
+  if (mode === "escape") {
+    const center = worldToScreen(0, 0);
+    const radius = planetRadiusValue() * baseScale() * zoom;
+    const glow = context.createRadialGradient(center.x, center.y, radius * 0.7, center.x, center.y, radius * 1.5);
+    glow.addColorStop(0, "rgba(61,111,168,.20)"); glow.addColorStop(1, "rgba(61,111,168,0)");
+    context.fillStyle = glow; context.beginPath(); context.arc(center.x, center.y, radius * 1.5, 0, 2 * Math.PI); context.fill();
+    context.fillStyle = "#3d6fa8"; context.strokeStyle = "#9fd6ff"; context.lineWidth = 2;
+    context.beginPath(); context.arc(center.x, center.y, radius, 0, 2 * Math.PI); context.fill(); context.stroke();
+    drawOrbitGuide();
+  }
+  if (showTrailInput.checked && trail.length > 1) {
+    context.beginPath();
+    trail.forEach((point, i) => { const p = worldToScreen(point.x, point.y); if (i === 0) context.moveTo(p.x, p.y); else context.lineTo(p.x, p.y); });
+    context.strokeStyle = mode === "escape" ? ESCAPE_TRAIL_COLOR : "#ff9f25";
+    context.lineWidth = 2; context.stroke();
+  }
+  if (firstLanding) {
+    const p = worldToScreen(firstLanding.x, GROUND_Y);
+    context.strokeStyle = "#43e6a1"; context.lineWidth = 2;
+    context.beginPath(); context.moveTo(p.x, p.y - 8); context.lineTo(p.x, p.y + 8); context.stroke();
+  }
+  const point = worldToScreen(x, y);
+  drawBall(point.x, point.y, mode === "escape" ? 5 : 7);
+}
+
+function startSimulation() {
+  if (![x, y, velocityX, velocityY, accelerationX, accelerationY, initialMechanicalEnergy].every(Number.isFinite)) {
+    setStopped("입력값의 규모가 계산 범위를 벗어났습니다. 조건을 조정한 뒤 다시 실행하세요.");
+    return;
+  }
+  running = true;
+  finished = false;
+  accumulator = 0;
+  previousTime = performance.now();
+  playPauseButton.textContent = "Ⅱ 일시정지";
+  message.textContent = `${currentMode().name} 실행 중`;
+}
+document.querySelectorAll("[data-version]").forEach(element => { element.textContent = `v${APP_VERSION}`; });
+document.title = `Physics Simulator · v${APP_VERSION}`;
+document.querySelectorAll("[data-mode]").forEach(button => {
+  button.addEventListener("click", () => selectMode(button.dataset.mode));
+});
+modeSelect.addEventListener("change", () => selectMode(modeSelect.value));
+get("openMode").addEventListener("click", () => {
+  running = false; accumulator = 0;
+  playPauseButton.textContent = finished ? "↻ 다시 재생" : "▶ 재생";
+  modeModal.classList.remove("hidden");
+});
+startButton.addEventListener("click", () => { resetSimulation(); startSimulation(); });
+playPauseButton.addEventListener("click", () => {
+  if (running) {
+    running = false; accumulator = 0;
+    playPauseButton.textContent = "▶ 재생";
+    message.textContent = "일시정지되었습니다.";
+  } else {
+    if (finished) resetSimulation();
+    startSimulation();
+  }
+});
+resetButton.addEventListener("click", () => {
+  resetSimulation(); message.textContent = "초기화되었습니다. 조건을 설정하고 실행하세요.";
+});
+const physicalInputs = [speedInput, massInput, angleInput, accelerationXInput, accelerationYInput,
+  gravitySelect, freefallHeightInput, frictionInput, radiusInput, angularVelocityInput,
+  inclineAngleInput, inclineFrictionInput, inclineHeightInput, planetGravityInput, planetRadiusInput, escapeHeightInput,
+  useEscapeSpeedInput, stopAfterLandingInput];
+physicalInputs.forEach(element => element.addEventListener("input", () => {
+  updateModeInterface(); resetSimulation();
+  message.textContent = "조건이 변경되어 초기화했습니다. 재생을 눌러 새 실험을 시작하세요.";
+}));
+showTrailInput.addEventListener("change", () => { trail = [{ x, y, t: elapsed }]; trailClock = 0; draw(); });
+showOrbitGuideInput.addEventListener("change", () => draw());
+get("setCircularOrbit").addEventListener("click", () => applyEscapePreset("circular"));
+get("setMinimumEscape").addEventListener("click", () => applyEscapePreset("escape"));
+escapeViewSelect.addEventListener("change", () => { updateCamera(); draw(); });
+get("zoomIn").addEventListener("click", () => setZoom(zoom * 1.25));
+get("zoomOut").addEventListener("click", () => setZoom(zoom / 1.25));
+get("fitView").addEventListener("click", () => { fitView(); draw(); });
+zoomSlider.addEventListener("input", () => setZoom(MIN_ZOOM * (MAX_ZOOM / MIN_ZOOM) ** (Number(zoomSlider.value) / 100)));
+simulation.addEventListener("wheel", event => { event.preventDefault(); setZoom(zoom * (event.deltaY < 0 ? 1.1 : 1 / 1.1)); }, { passive: false });
+get("showFormula").addEventListener("click", () => {
+  get("formulaTitle").textContent = currentMode().name;
+  get("formulaDescription").innerHTML = "<h3>핵심 공식</h3><pre></pre><h3>모형과 해석</h3><p></p>";
+  get("formulaDescription").querySelector("pre").textContent = currentMode().formula;
+  get("formulaDescription").querySelector("p").textContent = currentMode().explanation;
+  formulaModal.classList.remove("hidden");
+});
+get("closeFormula").addEventListener("click", () => formulaModal.classList.add("hidden"));
+document.addEventListener("keydown", event => { if (event.key === "Escape") formulaModal.classList.add("hidden"); });
+document.addEventListener("visibilitychange", () => { accumulator = 0; previousTime = performance.now(); });
+window.addEventListener("resize", () => { resizeCanvas(); draw(); });
+function animate(now) {
+  requestAnimationFrame(animate);
+  const frameTime = Math.max(0, Math.min((now - previousTime) / 1000, 0.25));
+  previousTime = now;
+  if (running && !document.hidden) {
+    accumulator += frameTime;
+    let steps = 0;
+    while (running && accumulator + 1e-12 >= PHYSICS_STEP && steps < 120) {
+      accumulator = Math.max(0, accumulator - PHYSICS_STEP);
+      update(PHYSICS_STEP, false);
+      steps++;
+    }
+    updatePhysicsInfo();
+  }
+  draw();
+}
+
+resizeCanvas();
+updateModeInterface();
+resetSimulation(true);
+requestAnimationFrame(animate);
+
+</script>
+
+</body>
+</html>
